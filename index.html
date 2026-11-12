@@ -45,7 +45,7 @@ h1,h2,h3{font-family:var(--f);font-weight:800;margin:0;letter-spacing:-.01em}
   border:1px solid var(--borde);border-radius:18px;box-shadow:var(--sombra);
   transition:background .6s,border-color .6s;
 }
-.boton,.boton-icono,.teclado button,.selector-nivel button,.selector-ops button,.pestanas button,.celda{
+.boton,.boton-icono,.teclado button,.selector-nivel button,.selector-ops button,.pestanas button,.celda,.stepper button,.segmentado button[aria-pressed="true"]{
   color:#2b3846;border:1px solid #9eabb8;
   background:linear-gradient(180deg,#ffffff 0%,#f4f7fa 48%,#e1e8ee 52%,#f0f4f7 100%);
   box-shadow:inset 0 1px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.05), 0 3px 0 #a3afbc, 0 5px 10px rgba(30,50,70,.16);
@@ -56,7 +56,7 @@ h1,h2,h3{font-family:var(--f);font-weight:800;margin:0;letter-spacing:-.01em}
   box-shadow:inset 0 1px 0 #fff, 0 0 0 #a3afbc, 0 2px 4px rgba(30,50,70,.16);
 }
 .boton{border-radius:999px;padding:12px 24px;font-weight:800;font-size:1.05rem}
-.boton.principal,.teclado .t-ok,.selector-nivel button[aria-pressed="true"],.selector-ops button[aria-pressed="true"],.pestanas button[aria-selected="true"]{
+.boton.principal,.teclado .t-ok,.selector-nivel button[aria-pressed="true"],.selector-ops button[aria-pressed="true"],.pestanas button[aria-selected="true"],.segmentado button[aria-pressed="true"]{
   color:#fff;border-color:var(--cian-osc);text-shadow:0 1px 1px rgba(0,40,70,.35);
   background:linear-gradient(180deg,var(--cian-claro) 0%,var(--cian) 47%,var(--cian-osc) 53%,var(--cian) 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.75), inset 0 -2px 0 rgba(0,0,0,.08), 0 3px 0 var(--cian-osc), 0 6px 12px rgba(0,110,170,.28);
@@ -132,6 +132,20 @@ body.modo-demonio::after{
 .modo .record{font-weight:800;color:var(--texto)}
 .modo .boton{margin-top:auto}
 .modo.destacado{border:2px solid var(--cian)}
+.ajustes{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:14px;background:rgba(120,140,160,.1);border:1px solid var(--borde)}
+.panel-ajuste{display:flex;flex-direction:column;gap:8px}
+.panel-ajuste[hidden]{display:none}
+.ayuda{font-size:.82rem !important;color:var(--texto-tenue) !important;line-height:1.35 !important}
+.segmentado{display:flex;gap:4px;padding:3px;border-radius:999px;background:rgba(120,140,160,.2);box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
+.segmentado button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 8px;font-weight:800;font-size:.9rem;color:var(--texto-suave)}
+.fila-ajuste{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.fila-ajuste.columna{flex-direction:column;align-items:stretch;gap:6px}
+.fila-ajuste .etq{font-weight:800;font-size:.88rem}
+.sesion-ajuste{display:flex;gap:8px;flex-wrap:wrap}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper button{width:32px;height:32px;border-radius:50%;font-weight:900;font-size:1.1rem;line-height:1;padding:0;display:grid;place-items:center}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper output{min-width:76px;text-align:center;font-weight:900;font-size:.95rem}
 .selector-nivel{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .selector-nivel button{border-radius:12px;padding:6px 0;line-height:1.1}
 .selector-nivel button b{display:block;font-size:1.2rem}
@@ -216,6 +230,7 @@ body.modo-demonio::after{
   text-shadow:0 2px 0 rgba(255,255,255,.6), 0 6px 10px rgba(0,40,80,.18);
 }
 .operacion-actual .op.larga{font-size:clamp(2rem,5.5vw,3.4rem);padding:.3em 0}
+.operacion-actual .op.muy-larga{font-size:clamp(1.5rem,4.2vw,2.6rem);padding:.45em 0;white-space:nowrap}
 .operacion-actual .op.entra{animation:entra .28s ease-out}
 @keyframes entra{from{transform:translateY(14px) scale(.9);opacity:0}to{transform:none;opacity:1}}
 .barra-op{height:9px;border-radius:6px;background:rgba(120,140,160,.25);overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
@@ -385,6 +400,7 @@ td.num{font-weight:800}
   .operacion-actual .etq{font-size:.85rem}
   .operacion-actual .op{font-size:3rem}
   .operacion-actual .op.larga{font-size:clamp(1.6rem,7.5vw,2.4rem)}
+  .operacion-actual .op.muy-larga{font-size:clamp(1.3rem,6vw,1.9rem)}
   .barra-op{margin-top:4px}
   .casilla-cola{display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 6px;min-width:60px}
   .casilla-cola.actual{display:none}
@@ -441,14 +457,37 @@ td.num{font-weight:800}
     <div class="modos">
       <article class="tarjeta modo destacado">
         <h2><span class="emoji">😈</span> Cálculo diabólico</h2>
-        <p>Sale una operación cada pocos segundos. Nivel 1: respóndela <b>sin retraso</b>. Nivel 2: escribe la de <b>hace 1</b>. Nivel 3: la de <b>hace 2</b>… mientras memorizas la nueva.</p>
-        <div class="selector-nivel" id="selector-nivel" role="group" aria-label="Nivel inicial"></div>
+        <p>Sale una operación cada pocos segundos. Escribe el resultado de la de <b>hace N</b> (el retraso) mientras memorizas la nueva. Con retraso 0 se responde la que ves.</p>
+        <div class="ajustes" id="ajustes-diabolico">
+          <div class="segmentado" role="group" aria-label="Tipo de nivel">
+            <button data-modo-nivel="progresivo">Progresivo</button><button data-modo-nivel="personalizado">Personalizado</button>
+          </div>
+          <div id="panel-progresivo" class="panel-ajuste">
+            <div class="selector-nivel" id="selector-nivel" role="group" aria-label="Nivel inicial"></div>
+            <p class="ayuda">Empiezas en el nivel elegido. Subes con 5 aciertos seguidos; el demonio te baja uno.</p>
+          </div>
+          <div id="panel-personalizado" class="panel-ajuste">
+            <div class="fila-ajuste"><span class="etq">Retraso de la respuesta</span>
+              <div class="stepper"><button data-ajuste="retraso" data-delta="-1" aria-label="Menos retraso">−</button><output id="v-retraso"></output><button data-ajuste="retraso" data-delta="1" aria-label="Más retraso">+</button></div></div>
+            <div class="fila-ajuste"><span class="etq">Tiempo por operación</span>
+              <div class="stepper"><button data-ajuste="segundos" data-delta="-1" aria-label="Menos tiempo">−</button><output id="v-segundos"></output><button data-ajuste="segundos" data-delta="1" aria-label="Más tiempo">+</button></div></div>
+            <p class="ayuda">Se mantienen fijos toda la sesión.</p>
+          </div>
+          <div class="fila-ajuste columna"><span class="etq">Nivel de las operaciones</span>
+            <div class="segmentado" id="selector-dificultad" role="group" aria-label="Nivel de las operaciones"></div>
+            <p class="ayuda" id="ayuda-dificultad"></p></div>
+          <div class="fila-ajuste"><span class="etq">Duración de la sesión</span>
+            <div class="sesion-ajuste">
+              <div class="stepper"><button data-ajuste="sesionOps" data-delta="-1" aria-label="Menos operaciones">−</button><output id="v-sesionOps"></output><button data-ajuste="sesionOps" data-delta="1" aria-label="Más operaciones">+</button></div>
+              <div class="stepper"><button data-ajuste="sesionMin" data-delta="-1" aria-label="Menos minutos">−</button><output id="v-sesionMin"></output><button data-ajuste="sesionMin" data-delta="1" aria-label="Más minutos">+</button></div>
+            </div></div>
+        </div>
         <div class="operaciones-menu">
           <span class="etq-ops">Operaciones:</span>
           <div class="selector-ops" id="selector-ops" role="group" aria-label="Tipos de operación"></div>
         </div>
         <p class="record">Récord: <span data-record="diabolico">—</span></p>
-        <button class="boton principal" data-empezar="diabolico">Empezar · 30 operaciones</button>
+        <button class="boton principal" data-empezar="diabolico" id="btn-empezar-diabolico">Empezar · 30 operaciones</button>
       </article>
       <article class="tarjeta modo">
         <h2><span class="emoji">🔢</span> Memoria de posiciones</h2>
@@ -498,9 +537,10 @@ td.num{font-weight:800}
       <!-- Cálculo diabólico -->
       <div class="vista" id="vista-diabolico">
         <div class="info-nivel">
-          <span class="chip">Nivel <span id="d-nivel">1</span></span>
+          <span class="chip" id="d-nivel">Nivel 1</span>
           <span class="chip n">N = <span id="d-n">1</span></span>
           <span class="chip"><span id="d-seg">6</span> s / operación</span>
+          <span class="chip" id="d-dif">Fácil</span>
         </div>
         <div class="tarjeta operacion-actual">
           <div class="etq" id="d-etq">Memoriza esta:</div>
@@ -670,52 +710,75 @@ td.num{font-weight:800}
     const t = Array.isArray(tipos) ? TIPOS_OPERACION.filter(function (x) { return tipos.indexOf(x) >= 0; }) : [];
     return t.length ? t : TIPOS_POR_DEFECTO.slice();
   }
-  function crearOperacionDeTipo(tipo, rand) {
+  /* Nivel de las operaciones: tamaño de los números (resultados de hasta 3 cifras) */
+  const DIFICULTADES = [
+    { id: 1, nombre: 'Fácil', ayuda: 'Números de una cifra' },
+    { id: 2, nombre: 'Media', ayuda: 'Hasta dos cifras y tablas del 12' },
+    { id: 3, nombre: 'Difícil', ayuda: 'Números grandes: resultados de hasta tres cifras' }
+  ];
+  const SUB = '₀₁₂₃₄₅₆₇₈₉', SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  function indice(numero, tabla) { return String(numero).split('').map(function (d) { return tabla[+d]; }).join(''); }
+  function crearOperacionDeTipo(tipo, rand, dif) {
+    dif = limitar(Math.round(dif || 1), 1, 3);
     let a, b, resultado;
-    if (tipo === 'suma') { a = entero(rand, 1, 9); b = entero(rand, 1, 9); resultado = a + b; }
-    else if (tipo === 'resta') { a = entero(rand, 2, 9); b = entero(rand, 1, a); resultado = a - b; } // nunca negativo
-    else if (tipo === 'mult') { a = entero(rand, 2, 9); b = entero(rand, 2, 9); resultado = a * b; }
-    else if (tipo === 'div') { b = entero(rand, 2, 9); resultado = entero(rand, 1, 9); a = b * resultado; } // división exacta
-    else if (tipo === 'integ') {
+    if (tipo === 'suma') {
+      if (dif === 1) { a = entero(rand, 1, 9); b = entero(rand, 1, 9); }
+      else if (dif === 2) { a = entero(rand, 10, 49); b = entero(rand, 2, 29); }
+      else { a = entero(rand, 25, 99); b = entero(rand, 12, 99); }
+      resultado = a + b;
+    } else if (tipo === 'resta') {           // nunca negativa
+      if (dif === 1) { a = entero(rand, 2, 9); b = entero(rand, 1, a); }
+      else if (dif === 2) { a = entero(rand, 12, 60); b = entero(rand, 2, Math.min(29, a)); }
+      else { a = entero(rand, 40, 199); b = entero(rand, 12, a - 1); }
+      resultado = a - b;
+    } else if (tipo === 'mult') {
+      if (dif === 1) { a = entero(rand, 2, 9); b = entero(rand, 2, 9); }
+      else if (dif === 2) { a = entero(rand, 6, 12); b = entero(rand, 3, 12); }
+      else { a = entero(rand, 12, 49); b = entero(rand, 3, 9); }
+      resultado = a * b;
+    } else if (tipo === 'div') {             // división exacta
+      if (dif === 1) { b = entero(rand, 2, 9); resultado = entero(rand, 1, 9); }
+      else if (dif === 2) { b = entero(rand, 3, 12); resultado = entero(rand, 6, 12); }
+      else { b = entero(rand, 3, 9); resultado = entero(rand, 12, 99); }
+      a = b * resultado;
+    } else if (tipo === 'integ') {
       // Integral definida de un monomio con resultado entero: ∫ₐᵇ c·xᵉ dx = c·(bᵉ⁺¹ − aᵉ⁺¹)/(e+1)
-      const SUB = '₀₁₂₃₄₅₆₇₈₉', SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
       const forma = entero(rand, 0, 4);
       let coef, exp, desde = 0, hasta;
-      if (forma === 0) { coef = entero(rand, 2, 9); exp = 0; hasta = entero(rand, 1, 9); }          // ∫₀ᵇ c dx = c·b
-      else if (forma === 1) { coef = 2; exp = 1; hasta = entero(rand, 1, 9); desde = entero(rand, 0, hasta - 1); } // b² − a²
-      else if (forma === 2) { coef = 1; exp = 1; hasta = 2 * entero(rand, 1, 4); }                     // b²/2 con b par
-      else if (forma === 3) { coef = 3; exp = 2; hasta = entero(rand, 1, 4); }                         // b³
-      else { coef = 4; exp = 3; hasta = entero(rand, 1, 3); }                                          // b⁴
+      if (forma === 0) { coef = [0, entero(rand, 2, 9), entero(rand, 6, 15), entero(rand, 12, 40)][dif]; exp = 0; hasta = entero(rand, dif === 1 ? 1 : dif === 2 ? 2 : 3, 9); }
+      else if (forma === 1) { coef = 2; exp = 1; hasta = entero(rand, 1, [0, 9, 15, 25][dif]); desde = entero(rand, 0, hasta - 1); }
+      else if (forma === 2) { coef = 1; exp = 1; hasta = 2 * entero(rand, 1, [0, 4, 8, 15][dif]); }
+      else if (forma === 3) { coef = 3; exp = 2; hasta = entero(rand, [0, 1, 2, 4][dif], [0, 4, 6, 9][dif]); }
+      else { coef = 4; exp = 3; hasta = entero(rand, [0, 1, 2, 3][dif], [0, 3, 4, 5][dif]); }
       const termino = exp === 0 ? String(coef) : (coef > 1 ? coef : '') + 'x' + (exp > 1 ? SUP[exp] : '');
-      const texto = '∫' + SUB[desde] + SUP[hasta] + ' ' + termino + ' dx';
+      const texto = '∫' + indice(desde, SUB) + indice(hasta, SUP) + ' ' + termino + ' dx';
       const r = coef * (Math.pow(hasta, exp + 1) - Math.pow(desde, exp + 1)) / (exp + 1);
       return { tipo: 'integ', coef: coef, exp: exp, desde: desde, hasta: hasta, simbolo: '∫', texto: texto, resultado: r };
-    }
-    else {
+    } else {
       // Derivada de un monomio (evaluada en un punto si hace falta): (c·xᵉ)′ en x = c·e·xᵉ⁻¹
-      const forma = entero(rand, 0, 3), sup = { 2: '²', 3: '³' };
+      const forma = entero(rand, 0, 3);
       let coef, exp, x = null, texto;
       if (forma === 0) {
-        coef = entero(rand, 2, 9); exp = 1;
-        const c = entero(rand, 0, 9);
+        coef = [0, entero(rand, 2, 9), entero(rand, 10, 30), entero(rand, 20, 99)][dif]; exp = 1;
+        const c = entero(rand, 0, dif === 1 ? 9 : 50);
         texto = '(' + coef + 'x' + (c ? ' + ' + c : '') + ')′';
       } else {
-        if (forma === 1) { coef = 1; exp = 2; x = entero(rand, 1, 9); }
-        else if (forma === 2) { coef = entero(rand, 2, 4); exp = 2; x = entero(rand, 1, 5); }
-        else { coef = 1; exp = 3; x = entero(rand, 1, 4); }
-        texto = '(' + (coef > 1 ? coef : '') + 'x' + sup[exp] + ')′ en x=' + x;
+        if (forma === 1) { coef = 1; exp = 2; x = entero(rand, [0, 1, 10, 20][dif], [0, 9, 25, 99][dif]); }
+        else if (forma === 2) { coef = entero(rand, 2, [0, 4, 9, 12][dif]); exp = 2; x = entero(rand, [0, 1, 2, 5][dif], [0, 5, 9, 15][dif]); }
+        else { coef = 1; exp = 3; x = entero(rand, [0, 1, 2, 4][dif], [0, 4, 6, 12][dif]); }
+        texto = '(' + (coef > 1 ? coef : '') + 'x' + SUP[exp] + ')′ en x=' + x;
       }
       return { tipo: 'deriv', coef: coef, exp: exp, x: x, simbolo: 'f′', texto: texto, resultado: coef * exp * Math.pow(x || 1, exp - 1) };
     }
     const simbolo = SIMBOLO_TIPO[tipo];
     return { tipo: tipo, a: a, b: b, simbolo: simbolo, texto: a + ' ' + simbolo + ' ' + b, resultado: resultado };
   }
-  function generarOperacion(rand, anterior, tipos) {
+  function generarOperacion(rand, anterior, tipos, dificultad) {
     rand = rand || Math.random;
     const lista = normalizarTipos(tipos);
     let op;
     do {
-      op = crearOperacionDeTipo(lista[entero(rand, 0, lista.length - 1)], rand);
+      op = crearOperacionDeTipo(lista[entero(rand, 0, lista.length - 1)], rand, dificultad);
     } while (anterior && anterior.texto === op.texto);
     return op;
   }
@@ -787,6 +850,38 @@ td.num{font-weight:800}
       }
     } while (cuenta < 2);
     return { secuencia: sec, cuenta: cuenta };
+  }
+
+  /* ---------- Ajustes del Cálculo diabólico ----------
+     modo "progresivo": los 6 niveles de NIVELES, que suben solos.
+     modo "personalizado": retraso y segundos fijos que elige el jugador. */
+  const AJUSTES = {
+    retraso: [0, 1, 2, 3, 4, 5],
+    segundos: [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30],
+    dificultad: [1, 2, 3],
+    sesionOps: [10, 20, 30, 50, 100],
+    sesionMin: [3, 5, 10, 15, 20, 30]
+  };
+  function ajustesPorDefecto() { return { modo: 'progresivo', retraso: 1, segundos: 6, dificultad: 1, sesionOps: 30, sesionMin: 5 }; }
+  function normalizarAjustes(a) {
+    const d = ajustesPorDefecto(), out = { modo: a && a.modo === 'personalizado' ? 'personalizado' : 'progresivo' };
+    Object.keys(AJUSTES).forEach(function (k) { out[k] = a && AJUSTES[k].indexOf(a[k]) >= 0 ? a[k] : d[k]; });
+    return out;
+  }
+  function pasoAjuste(clave, valor, delta) {
+    const lista = AJUSTES[clave];
+    let i = lista.indexOf(valor);
+    if (i < 0) i = lista.indexOf(ajustesPorDefecto()[clave]);
+    return lista[limitar(i + delta, 0, lista.length - 1)];
+  }
+  /** Puntos por acierto: más retraso, menos tiempo y números más grandes valen más. */
+  function puntosAcierto(n, segundos, dificultad, velocidad) {
+    const base = 10 * (1 + n) * Math.sqrt(6 / Math.max(1, segundos)) * (1 + (dificultad - 1) * 0.5);
+    return Math.round(base + limitar(velocidad, 0, 1) * 5 * (1 + n));
+  }
+  /** Dificultad global de 0 a 1 (para la edad mental). */
+  function calcularDificultadSesion(n, segundos, dificultad) {
+    return limitar(n / 4 * 0.5 + limitar((8 - segundos) / 6, 0, 1) * 0.3 + (dificultad - 1) / 2 * 0.2, 0, 1);
   }
 
   /* ---------- Edad mental ficticia ---------- */
@@ -912,6 +1007,7 @@ td.num{font-weight:800}
 
     // 5) generarOperacion: una cifra, sin negativos, resultado coherente.
     (function () {
+      const medias = {};
       const rand = crearAleatorio(7);
       let ant = null;
       for (let i = 0; i < 3000; i++) {
@@ -964,6 +1060,28 @@ td.num{font-weight:800}
         comprobar(t === 'div' || t === 'deriv', 'mezcla div+deriv respeta la selección');
       }
       comprobar(normalizarTipos([]).join() === TIPOS_POR_DEFECTO.join(), 'lista vacía => tipos por defecto');
+      // Nivel de las operaciones: todos los tipos en las 3 dificultades
+      [1, 2, 3].forEach(function (dif) {
+        TIPOS_OPERACION.forEach(function (tipo) {
+          let suma = 0;
+          for (let i = 0; i < 1500; i++) {
+            const o = generarOperacion(rand, null, [tipo], dif);
+            suma += o.resultado;
+            comprobar(Number.isInteger(o.resultado) && o.resultado >= 0 && o.resultado <= 999, tipo + ' dif ' + dif + ': entero de 0 a 999 (' + o.texto + ')');
+            if (tipo === 'suma') comprobar(o.resultado === o.a + o.b, 'suma dif ' + dif);
+            if (tipo === 'resta') comprobar(o.resultado === o.a - o.b, 'resta dif ' + dif);
+            if (tipo === 'mult') comprobar(o.resultado === o.a * o.b, 'mult dif ' + dif);
+            if (tipo === 'div') comprobar(o.a === o.b * o.resultado && o.b >= 2, 'div exacta dif ' + dif);
+            if (tipo === 'deriv') comprobar(o.resultado === o.coef * o.exp * Math.pow(o.x || 1, o.exp - 1), 'deriv dif ' + dif);
+            if (tipo === 'integ') comprobar(o.resultado === o.coef * (Math.pow(o.hasta, o.exp + 1) - Math.pow(o.desde, o.exp + 1)) / (o.exp + 1) && o.desde < o.hasta, 'integ dif ' + dif);
+          }
+          medias[tipo + dif] = suma / 1500;
+        });
+      });
+      TIPOS_OPERACION.forEach(function (tipo) {
+        comprobar(medias[tipo + 1] < medias[tipo + 2] && medias[tipo + 2] < medias[tipo + 3], tipo + ': los números crecen con la dificultad');
+      });
+      comprobar(indice(25, SUP) === '²⁵' && indice(12, SUB) === '₁₂', 'límites de dos cifras en las integrales');
       comprobar(normalizarTipos(['xx', 'div']).join() === 'div', 'ignora tipos desconocidos');
       for (let i = 0; i < 2000; i++) {
         const d = generarOperacionDoble(rand);
@@ -989,6 +1107,21 @@ td.num{font-weight:800}
       comprobar(estadoProfesor(q) !== 'demonio', 'fallos no seguidos no invocan al demonio');
     })();
 
+    // 6b) Ajustes personalizados, puntos y dificultad.
+    (function () {
+      const d = normalizarAjustes({ modo: 'raro', retraso: 9, segundos: 7, dificultad: 2, sesionOps: 50, sesionMin: 'x' });
+      comprobar(d.modo === 'progresivo' && d.retraso === 1 && d.segundos === 6 && d.dificultad === 2 && d.sesionOps === 50 && d.sesionMin === 5, 'ajustes inválidos => por defecto');
+      comprobar(normalizarAjustes(null).modo === 'progresivo', 'ajustes vacíos');
+      comprobar(normalizarAjustes({ modo: 'personalizado', retraso: 5, segundos: 30 }).retraso === 5, 'retraso 5 permitido');
+      comprobar(pasoAjuste('segundos', 30, 1) === 30 && pasoAjuste('segundos', 2, -1) === 2, 'tiempo limitado entre 2 y 30 s');
+      comprobar(pasoAjuste('segundos', 6, 1) === 8 && pasoAjuste('retraso', 0, -1) === 0, 'pasos de ajuste');
+      comprobar(puntosAcierto(0, 6, 1, 0) === 10, 'puntos base: 10');
+      comprobar(puntosAcierto(2, 6, 1, 0) > puntosAcierto(1, 6, 1, 0), 'más retraso, más puntos');
+      comprobar(puntosAcierto(1, 3, 1, 0) > puntosAcierto(1, 20, 1, 0), 'menos tiempo, más puntos');
+      comprobar(puntosAcierto(1, 6, 3, 0) > puntosAcierto(1, 6, 1, 0), 'números grandes, más puntos');
+      comprobar(calcularDificultadSesion(0, 30, 1) === 0 && calcularDificultadSesion(5, 2, 3) === 1, 'dificultad de sesión entre 0 y 1');
+    })();
+
     // 7) Niveles, edad mental y agrupación por día.
     comprobar(configNivel(1).n === 0 && configNivel(1).segundos === 6, 'nivel 1: sin retraso, 6 s');
     comprobar(configNivel(2).n === 1, 'nivel 2: retraso 1');
@@ -1008,6 +1141,8 @@ td.num{font-weight:800}
   global.Nucleo = {
     NIVELES: NIVELES, NIVEL_MAX: NIVEL_MAX, configNivel: configNivel, limitar: limitar, entero: entero,
     crearAleatorio: crearAleatorio, generarOperacion: generarOperacion, TIPOS_OPERACION: TIPOS_OPERACION,
+    DIFICULTADES: DIFICULTADES, AJUSTES: AJUSTES, ajustesPorDefecto: ajustesPorDefecto, normalizarAjustes: normalizarAjustes,
+    pasoAjuste: pasoAjuste, puntosAcierto: puntosAcierto, calcularDificultadSesion: calcularDificultadSesion,
     NOMBRES_TIPO: NOMBRES_TIPO, SIMBOLO_TIPO: SIMBOLO_TIPO, TIPOS_POR_DEFECTO: TIPOS_POR_DEFECTO, normalizarTipos: normalizarTipos, ColaOperaciones: ColaOperaciones,
     comprobarRespuesta: comprobarRespuesta, crearProfesor: crearProfesor, actualizarProfesor: actualizarProfesor,
     estadoProfesor: estadoProfesor, generarOperacionDoble: generarOperacionDoble, generarSecuencia: generarSecuencia,
@@ -1133,7 +1268,7 @@ td.num{font-weight:800}
 
   /* ---------------- Almacenamiento (localStorage con try/catch) ---------------- */
   const CLAVE = 'profeTuerca.v1';
-  function datosVacios() { return { sesiones: [], mejores: { diabolico: 0, posiciones: 0, doble: 0 }, nivelDiabolico: 1, sonido: true, operaciones: N.TIPOS_POR_DEFECTO.slice() }; }
+  function datosVacios() { return { sesiones: [], mejores: { diabolico: 0, posiciones: 0, doble: 0 }, nivelDiabolico: 1, sonido: true, operaciones: N.TIPOS_POR_DEFECTO.slice(), ajustes: N.ajustesPorDefecto() }; }
   function cargarDatos() {
     try {
       const t = localStorage.getItem(CLAVE);
@@ -1144,7 +1279,8 @@ td.num{font-weight:800}
         mejores: Object.assign(v.mejores, d.mejores || {}),
         nivelDiabolico: N.configNivel(d.nivelDiabolico || 1).nivel,
         sonido: d.sonido !== false,
-        operaciones: N.normalizarTipos(d.operaciones)
+        operaciones: N.normalizarTipos(d.operaciones),
+        ajustes: N.normalizarAjustes(d.ajustes)
       };
     } catch (e) { return datosVacios(); }
   }
@@ -1278,28 +1414,33 @@ td.num{font-weight:800}
   /* =================================================================
      MODO 1: CÁLCULO DIABÓLICO
      ================================================================= */
-  const SESION_SEGUNDOS = 300, SESION_OPERACIONES = 30, RACHA_SUBIR = 5;
-  function crearDiabolico(nivelInicial) {
+  const RACHA_SUBIR = 5;
+  function nombreDificultad(d) { return N.DIFICULTADES[d - 1].nombre; }
+  function crearDiabolico(ajustes, nivelInicial) {
+    const progresivo = ajustes.modo !== 'personalizado';
+    const SESION_SEGUNDOS = ajustes.sesionMin * 60, SESION_OPERACIONES = ajustes.sesionOps;
     return {
+      config: function () { return progresivo ? N.configNivel(this.nivel) : { n: ajustes.retraso, segundos: ajustes.segundos }; },
       modo: 'diabolico',
       iniciar: function () {
         this.nivel = nivelInicial; this.nivelMax = nivelInicial;
         this.cola = new N.ColaOperaciones();
         this.transcurrido = 0; this.respondidas = 0; this.aciertos = 0; this.puntos = 0; this.racha = 0; this.mejorRacha = 0;
-        this.velocidades = [];
-        estado.maxDigitos = 2;
+        this.velocidades = []; this.nMax = 0; this.segMin = 99;
+        estado.maxDigitos = ajustes.dificultad > 1 ? 3 : 2;
         $('#m-prog-etq').textContent = 'Op.';
-        $('#etq-tiempo-izq').textContent = 'Sesión: 5 min o 30 operaciones';
-        const n0 = N.configNivel(this.nivel).n;
+        $('#etq-tiempo-izq').textContent = 'Sesión: ' + ajustes.sesionMin + ' min o ' + SESION_OPERACIONES + ' operaciones';
+        const n0 = this.config().n;
         decir(n0 === 0 ? 'Calentamos: resuelve cada operación según aparece.' : 'Memoriza la primera. Responderás la de hace ' + n0 + '.');
         this.mostrarSiguiente();
       },
       aceptaNumeros: function () { return this.objetivo >= 0; },
       mostrarSiguiente: function () {
         if (this.respondidas >= SESION_OPERACIONES || this.transcurrido >= SESION_SEGUNDOS) { terminarSesion(); return; }
-        const cfg = N.configNivel(this.nivel);
+        const cfg = this.config();
         this.n = cfg.n; this.duracion = cfg.segundos; this.restante = cfg.segundos;
-        const op = N.generarOperacion(Math.random, this.cola.actual(), estado.datos.operaciones);
+        this.nMax = Math.max(this.nMax, cfg.n); this.segMin = Math.min(this.segMin, cfg.segundos);
+        const op = N.generarOperacion(Math.random, this.cola.actual(), estado.datos.operaciones, ajustes.dificultad);
         this.cola.agregar(op);
         this.objetivo = this.cola.indiceObjetivo(this.n);
         estado.entrada = ''; pintarEntrada();
@@ -1307,11 +1448,14 @@ td.num{font-weight:800}
         this.pintar();
       },
       pintar: function () {
-        const cfg = N.configNivel(this.nivel);
-        $('#d-nivel').textContent = this.nivel; $('#d-n').textContent = this.n; $('#d-seg').textContent = String(cfg.segundos).replace('.', ',');
+        const cfg = this.config(), texto = this.cola.actual().texto;
+        $('#d-nivel').textContent = progresivo ? 'Nivel ' + this.nivel : 'Personalizado';
+        $('#d-n').textContent = this.n; $('#d-seg').textContent = String(cfg.segundos).replace('.', ',');
+        $('#d-dif').textContent = nombreDificultad(ajustes.dificultad);
         const opEl = $('#d-op');
-        opEl.textContent = this.cola.actual().texto;
-        opEl.classList.toggle('larga', this.cola.actual().texto.length > 8);
+        opEl.textContent = texto;
+        opEl.classList.toggle('larga', texto.length > 8 && texto.length <= 12);
+        opEl.classList.toggle('muy-larga', texto.length > 12);
         reiniciarAnimacion(opEl, 'entra');
         // Cola visual: N casillas tapadas + la actual
         const k = this.cola.ops.length - 1, cont = $('#d-cola');
@@ -1363,7 +1507,7 @@ td.num{font-weight:800}
           this.aciertos++; this.racha++; this.mejorRacha = Math.max(this.mejorRacha, this.racha);
           const velocidad = N.limitar(this.restante / this.duracion, 0, 1);
           this.velocidades.push(velocidad);
-          this.puntos += 10 * this.nivel + Math.round(velocidad * 5 * this.nivel);
+          this.puntos += N.puntosAcierto(this.n, this.duracion, ajustes.dificultad, velocidad);
           feedback('✓ ' + texto, 'ok'); marcarPantallaNum('ok');
         } else {
           this.racha = 0; this.velocidades.push(0);
@@ -1372,13 +1516,13 @@ td.num{font-weight:800}
         }
         const reac = reaccionProfesor(r.correcta);
         // Subir de nivel con racha; bajar al invocar al demonio
-        if (r.correcta && this.racha > 0 && this.racha % RACHA_SUBIR === 0 && this.nivel < N.NIVEL_MAX) {
+        if (progresivo && r.correcta && this.racha > 0 && this.racha % RACHA_SUBIR === 0 && this.nivel < N.NIVEL_MAX) {
           const nAntes = N.configNivel(this.nivel).n;
           this.nivel++; this.nivelMax = Math.max(this.nivelMax, this.nivel);
           const cfg = N.configNivel(this.nivel);
           Sonido.nivel();
           aviso('¡Nivel ' + this.nivel + '! ' + (cfg.n > nAntes ? 'Ahora responde la de hace ' + cfg.n + (nAntes === 0 ? ' (retraso 1)' : '') : cfg.segundos + ' s por operación'));
-        } else if (reac.ahora === 'demonio' && reac.antes !== 'demonio' && this.nivel > 1) {
+        } else if (progresivo && reac.ahora === 'demonio' && reac.antes !== 'demonio' && this.nivel > 1) {
           this.nivel--; aviso('El demonio te baja al nivel ' + this.nivel);
         }
         this.mostrarSiguiente();
@@ -1388,9 +1532,12 @@ td.num{font-weight:800}
         const vel = this.velocidades.length ? this.velocidades.reduce(function (a, b) { return a + b; }, 0) / this.velocidades.length : 0;
         return {
           puntos: this.puntos, precision: precision, aciertos: this.aciertos, total: this.respondidas,
-          edad: N.calcularEdadMental(precision, (this.nivelMax - 1) / (N.NIVEL_MAX - 1), vel),
-          extraEtq: 'Nivel máximo', extra: this.nivelMax, extraSub: 'N = ' + N.configNivel(this.nivelMax).n + ' · mejor racha ' + this.mejorRacha,
-          nivelFinal: this.nivel
+          edad: N.calcularEdadMental(precision, N.calcularDificultadSesion(this.nMax, this.segMin, ajustes.dificultad), vel),
+          extraEtq: progresivo ? 'Nivel máximo' : 'Retraso',
+          extra: progresivo ? this.nivelMax : this.nMax,
+          extraSub: (progresivo ? 'N = ' + N.configNivel(this.nivelMax).n : String(ajustes.segundos).replace('.', ',') + ' s/op') +
+            ' · ' + nombreDificultad(ajustes.dificultad) + ' · mejor racha ' + this.mejorRacha,
+          nivelFinal: progresivo ? this.nivel : null
         };
       }
     };
@@ -1605,7 +1752,7 @@ td.num{font-weight:800}
     $$('.vista').forEach(function (v) { v.classList.toggle('activa', v.id === 'vista-' + modo); });
     $('#zona-teclado').style.display = modo === 'posiciones' ? 'none' : '';
     $('#p-cuadricula').style.display = modo === 'posiciones' ? '' : 'none';
-    estado.juego = modo === 'diabolico' ? crearDiabolico(estado.datos.nivelDiabolico)
+    estado.juego = modo === 'diabolico' ? crearDiabolico(N.normalizarAjustes(estado.datos.ajustes), estado.datos.nivelDiabolico)
                  : modo === 'posiciones' ? crearPosiciones() : crearDoble();
     mostrarPantalla('pantalla-juego');
     estado.juego.iniciar();
@@ -1730,7 +1877,37 @@ td.num{font-weight:800}
   $('#btn-volver-hist').addEventListener('click', function () { pintarMenu(); mostrarPantalla('pantalla-menu'); });
 
   /* ---------------- Menú ---------------- */
+  function pintarAjustes() {
+    const a = estado.datos.ajustes;
+    $$('[data-modo-nivel]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.modoNivel === a.modo)); });
+    $('#panel-progresivo').hidden = a.modo !== 'progresivo';
+    $('#panel-personalizado').hidden = a.modo !== 'personalizado';
+    $('#v-retraso').textContent = a.retraso === 0 ? 'Sin retraso' : 'Hace ' + a.retraso;
+    $('#v-segundos').textContent = a.segundos + ' s';
+    $('#v-sesionOps').textContent = a.sesionOps + ' op.';
+    $('#v-sesionMin').textContent = a.sesionMin + ' min';
+    $$('[data-ajuste]').forEach(function (b) {
+      const k = b.dataset.ajuste, lista = N.AJUSTES[k], i = lista.indexOf(a[k]);
+      b.disabled = b.dataset.delta === '-1' ? i <= 0 : i >= lista.length - 1;
+    });
+    $('#selector-dificultad').innerHTML = N.DIFICULTADES.map(function (d) {
+      return '<button data-dificultad="' + d.id + '" aria-pressed="' + (d.id === a.dificultad) + '">' + d.nombre + '</button>';
+    }).join('');
+    $('#ayuda-dificultad').textContent = N.DIFICULTADES[a.dificultad - 1].ayuda + '.';
+    $('#btn-empezar-diabolico').textContent = 'Empezar · ' + a.sesionOps + ' operaciones';
+  }
+  $('#ajustes-diabolico').addEventListener('click', function (e) {
+    const a = estado.datos.ajustes;
+    const modo = e.target.closest('[data-modo-nivel]'), paso = e.target.closest('[data-ajuste]'), dif = e.target.closest('[data-dificultad]');
+    if (modo) a.modo = modo.dataset.modoNivel;
+    else if (paso) a[paso.dataset.ajuste] = N.pasoAjuste(paso.dataset.ajuste, a[paso.dataset.ajuste], parseInt(paso.dataset.delta, 10));
+    else if (dif) a.dificultad = parseInt(dif.dataset.dificultad, 10);
+    else return;
+    estado.datos.ajustes = N.normalizarAjustes(a); guardarDatos(); pintarAjustes();
+  });
+
   function pintarMenu() {
+    pintarAjustes();
     const sel = $('#selector-nivel'); let html = '';
     N.NIVELES.forEach(function (c) {
       html += '<button data-nivel="' + c.nivel + '" aria-pressed="' + (c.nivel === estado.datos.nivelDiabolico) + '" aria-label="Nivel ' + c.nivel + ', ' + (c.n === 0 ? 'sin retraso' : 'retraso ' + c.n) + ', ' + c.segundos + ' segundos">' +
