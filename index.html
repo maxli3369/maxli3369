@@ -28,10 +28,6 @@ html,body{margin:0;height:100%}
 body{
   font-family:var(--f); color:var(--texto); font-size:18px;
   background-color:var(--fondo1);
-  background-image:
-    radial-gradient(ellipse at 50% -10%, rgba(25,168,228,.18), transparent 60%),
-    repeating-linear-gradient(-45deg, var(--fondo1) 0 18px, var(--fondo2) 18px 36px);
-  background-attachment:fixed;
   transition:background-color .6s, color .6s;
   -webkit-tap-highlight-color:transparent; overflow-x:hidden;
 }
@@ -105,10 +101,69 @@ body.modo-demonio::after{
 }
 @keyframes temblor-suave{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
+/* ---------- Fondo vivo: capa fija que no se mueve al hacer scroll (también en iPhone) ---------- */
+.fondo{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,var(--fondo1),var(--fondo2));transition:background .6s}
+.fondo-rayas{position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(255,255,255,.5) 0 18px,transparent 18px 36px);opacity:.7}
+body.modo-demonio .fondo-rayas{background:repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 18px,transparent 18px 36px)}
+.fondo-brillo{position:absolute;width:70vmax;height:70vmax;border-radius:50%;will-change:transform}
+.fondo-brillo.b1{top:-30vmax;left:-25vmax;background:radial-gradient(circle,rgba(25,168,228,.32),rgba(25,168,228,0) 65%);animation:flotar-a 16s ease-in-out infinite alternate}
+.fondo-brillo.b2{bottom:-35vmax;right:-25vmax;background:radial-gradient(circle,rgba(245,154,27,.24),rgba(245,154,27,0) 65%);animation:flotar-b 21s ease-in-out infinite alternate}
+.fondo-brillo.b3{top:30%;left:45%;width:45vmax;height:45vmax;background:radial-gradient(circle,rgba(120,220,140,.16),rgba(120,220,140,0) 65%);animation:flotar-a 26s ease-in-out infinite alternate-reverse}
+body.modo-demonio .fondo-brillo.b1{background:radial-gradient(circle,rgba(255,40,20,.4),rgba(255,40,20,0) 65%)}
+body.modo-demonio .fondo-brillo.b2,body.modo-demonio .fondo-brillo.b3{background:radial-gradient(circle,rgba(255,120,0,.22),rgba(255,120,0,0) 65%)}
+@keyframes flotar-a{to{transform:translate(8vmax,6vmax) scale(1.12)}}
+@keyframes flotar-b{to{transform:translate(-7vmax,-5vmax) scale(1.08)}}
+.fondo-simbolos span{
+  position:absolute;left:var(--x);top:var(--y);font-size:var(--tam);font-weight:900;line-height:1;color:var(--cian);opacity:var(--op);
+  transform:rotate(var(--r));animation:deriva var(--dur) ease-in-out var(--retraso) infinite alternate;will-change:transform;transition:color .6s
+}
+@keyframes deriva{to{transform:translate(var(--dx),var(--dy)) rotate(calc(var(--r) + 25deg))}}
+
 /* ---------- Pantallas de la app ---------- */
 #app{position:relative;z-index:1;min-height:100vh;min-height:100dvh}
 .pantalla{display:none;min-height:100vh;min-height:100dvh;padding:18px 16px 28px}
 .pantalla.activa{display:block}
+.pantalla.activa > *{animation:entrar-pantalla .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes entrar-pantalla{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+
+/* Aparición al hacer scroll */
+.revelar{opacity:0;transform:translateY(34px) scale(.97);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0) * 90ms)}
+.revelar.visible{opacity:1;transform:none}
+
+/* Luz que sigue al puntero y elevación */
+.luz{position:relative}
+.luz::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;z-index:0;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.65),rgba(255,255,255,0) 45%)
+}
+.luz > *{position:relative;z-index:1}
+@media (hover:hover){
+  .luz:hover::before{opacity:1}
+  .modo.revelar.visible{transition:opacity .7s,transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+  .modo.revelar.visible:hover{transform:translateY(-6px);box-shadow:inset 0 1px 0 #fff,0 18px 34px rgba(20,60,100,.18),0 2px 4px rgba(20,60,100,.12)}
+}
+.inclinable{transform-style:preserve-3d;will-change:transform}
+
+/* Brillo que recorre los botones principales */
+.boton.principal{position:relative;overflow:hidden}
+.boton.principal::after{
+  content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;
+  background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));transform:skewX(-20deg);
+  animation:destello 4.5s ease-in-out infinite
+}
+@keyframes destello{0%,70%{left:-60%}100%{left:130%}}
+
+/* Barra superior de cristal del menú */
+.barra-menu{
+  position:sticky;top:10px;z-index:30;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:999px;
+  background:rgba(255,255,255,.6);-webkit-backdrop-filter:saturate(1.8) blur(16px);backdrop-filter:saturate(1.8) blur(16px);
+  border:1px solid rgba(255,255,255,.85);box-shadow:0 10px 30px rgba(20,50,80,.14),inset 0 1px 0 #fff
+}
+.marca{display:flex;align-items:center;gap:8px;font-weight:900;font-size:1.05rem;margin-right:auto;color:#2b3846}
+.marca svg{width:30px;height:30px;flex:none;animation:girar 14s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.boton.mini{padding:8px 14px;font-size:.9rem;white-space:nowrap}
+.marca span{white-space:nowrap}
 
 /* ---------- Menú ---------- */
 .menu{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -156,7 +211,7 @@ body.modo-demonio::after{
 .selector-ops button{border-radius:999px;padding:5px 12px;font-size:.9rem;font-weight:700;color:#8a96a4}
 .selector-ops button .sim{font-weight:900}
 .pie-menu{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.pie-menu .nota{color:var(--texto-tenue);font-size:.88rem;margin-left:auto}
+.pie-menu .nota{color:var(--texto-tenue);font-size:.88rem;margin:0 auto}
 
 /* ---------- Consola de juego ---------- */
 #pantalla-juego{padding-top:14px}
@@ -370,6 +425,10 @@ td.num{font-weight:800}
 }
 @media (max-width:760px){
   .pantalla{padding:12px 12px 20px}
+  .barra-menu{top:6px;padding:6px 6px 6px 10px}
+  .marca span{font-size:.95rem}
+  .boton.mini{width:40px;height:40px;padding:0;font-size:1.1rem;display:grid;place-items:center}
+  .boton.mini .txt{display:none}
   .cabecera-menu,.cab-resultados{padding:12px 14px;gap:12px}
   .cabecera-menu .prof{width:80px}
   .cab-resultados .prof{width:80px}
@@ -435,17 +494,32 @@ td.num{font-weight:800}
   .boton-icono{width:32px;height:32px}
 }
 @media (prefers-reduced-motion:reduce){
+  .fondo-brillo,.fondo-simbolos span,.marca svg,.boton.principal::after,.pantalla.activa > *{animation:none}
+  .revelar{opacity:1;transform:none;transition:none}
   .temblor{animation:temblor-suave .35s both}
   .prof .respira,.prof .ojos,body.modo-demonio::after,.casilla-cola.objetivo{animation:none}
 }
 </style>
 </head>
 <body>
+<div class="fondo" aria-hidden="true">
+  <div class="fondo-rayas"></div>
+  <div class="fondo-brillo b1"></div><div class="fondo-brillo b2"></div><div class="fondo-brillo b3"></div>
+  <div class="fondo-simbolos" id="fondo-simbolos"></div>
+</div>
 <div id="app">
 
 <!-- ================= MENÚ ================= -->
 <section id="pantalla-menu" class="pantalla activa" aria-label="Menú principal">
   <div class="menu">
+    <header class="barra-menu">
+      <div class="marca">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="38,20 29,35.6 11,35.6 2,20 11,4.4 29,4.4" fill="#19a8e4" stroke="#0a7db6" stroke-width="2"/><circle cx="20" cy="20" r="7" fill="#fff" stroke="#0a7db6" stroke-width="2"/></svg>
+        <span>Profe Tuerca</span>
+      </div>
+      <button class="boton mini" id="btn-historial" aria-label="Historial">📈<span class="txt"> Historial</span></button>
+      <button class="boton mini" id="btn-sonido" aria-pressed="true">🔊<span class="txt"> Sonido: sí</span></button>
+    </header>
     <div class="marco banner"><div class="lcd cabecera-menu">
       <div class="prof tranquilo" data-prof></div>
       <div>
@@ -504,8 +578,6 @@ td.num{font-weight:800}
     </div>
 
     <div class="pie-menu">
-      <button class="boton" id="btn-historial">📈 Historial</button>
-      <button class="boton" id="btn-sonido" aria-pressed="true">🔊 Sonido: sí</button>
       <span class="nota">Teclado: números, ⌫, Intro para confirmar, Esc para pausar.</span>
     </div>
   </div>
@@ -1296,6 +1368,66 @@ td.num{font-weight:800}
   Sonido.activo = estado.datos.sonido;
 
   /* ---------------- Utilidades de UI ---------------- */
+  /* ---------- Efectos visuales: fondo, aparición, luz e inclinación ---------- */
+  const SIMBOLOS_FONDO = ['∫', 'π', 'Σ', '√', '×', '÷', '+', '−', '=', '∞', 'Δ', 'f′', '%', '²', '7', '3'];
+  (function crearFondo() {
+    const cont = $('#fondo-simbolos'), movil = window.innerWidth < 760;
+    let html = '';
+    for (let i = 0; i < (movil ? 14 : 24); i++) {
+      const v = {
+        x: (Math.random() * 96).toFixed(1) + '%', y: (Math.random() * 94).toFixed(1) + '%',
+        tam: (movil ? 1.4 : 1.8) + Math.random() * (movil ? 2.2 : 3.4) + 'rem', op: (0.05 + Math.random() * 0.1).toFixed(2),
+        r: Math.round(Math.random() * 60 - 30) + 'deg', dur: (14 + Math.random() * 16).toFixed(1) + 's', retraso: (-Math.random() * 20).toFixed(1) + 's',
+        dx: Math.round(Math.random() * 80 - 40) + 'px', dy: Math.round(Math.random() * 90 - 45) + 'px'
+      };
+      html += '<span style="' + Object.keys(v).map(function (k) { return '--' + k + ':' + v[k]; }).join(';') + '">' + SIMBOLOS_FONDO[i % SIMBOLOS_FONDO.length] + '</span>';
+    }
+    cont.innerHTML = html;
+  })();
+
+  const observador = 'IntersectionObserver' in window ? new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (e) {
+      if (e.isIntersecting) e.target.classList.add('visible');
+      else if (e.boundingClientRect.width === 0) e.target.classList.remove('visible'); // pantalla oculta: re-animar al volver
+    });
+  }, { threshold: 0.12 }) : null;
+  function prepararAparicion(selector) {
+    $$(selector).forEach(function (el, i) {
+      if (el.classList.contains('revelar')) return;
+      el.classList.add('revelar'); el.style.setProperty('--i', i % 6);
+      if (observador) observador.observe(el); else el.classList.add('visible');
+    });
+  }
+  prepararAparicion('.banner, .modo, .pie-menu');
+  prepararAparicion('#pantalla-resultados .marco, .cifra, #pantalla-resultados .bloque-grafica, #pantalla-resultados .acciones');
+  prepararAparicion('#pantalla-historial .pestanas, #pantalla-historial .bloque-grafica, #pantalla-historial .acciones');
+
+  const conPuntero = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  $$('.modo, .cifra, .bloque-grafica').forEach(function (el) {
+    el.classList.add('luz');
+    if (!conPuntero) return;
+    const inclinar = el.classList.contains('cifra');
+    if (inclinar) el.classList.add('inclinable');
+    el.addEventListener('pointermove', function (e) {
+      const r = el.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      el.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); el.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+      if (inclinar) { el.style.transition = 'transform .08s'; el.style.transform = 'perspective(700px) rotateX(' + ((0.5 - py) * 14).toFixed(2) + 'deg) rotateY(' + ((px - 0.5) * 16).toFixed(2) + 'deg) translateZ(6px)'; }
+    });
+    el.addEventListener('pointerleave', function () { if (inclinar) { el.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)'; el.style.transform = ''; } });
+  });
+
+  /** Cuenta de 0 al valor final (resultados). */
+  function contar(el, final, sufijo) {
+    sufijo = sufijo || '';
+    if (typeof final !== 'number' || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) { el.textContent = final + sufijo; return; }
+    const t0 = performance.now(), dur = 1100;
+    (function paso(t) {
+      const f = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - f, 3);
+      el.textContent = Math.round(final * e) + sufijo;
+      if (f < 1) requestAnimationFrame(paso);
+    })(t0);
+  }
+
   function mostrarPantalla(id) {
     if (id !== 'pantalla-juego') $('#aviso').classList.remove('visible');
     $$('.pantalla').forEach(function (p) { p.classList.toggle('activa', p.id === id); });
@@ -1788,12 +1920,12 @@ td.num{font-weight:800}
     pintarProfesor($('#profe-resultados'), p >= 0.7 ? 'tranquilo' : p >= 0.45 ? 'enfadado' : 'demonio');
     $('#r-titulo').textContent = NOMBRES[modo] + ': fin';
     $('#r-comentario').textContent = comentario;
-    $('#r-puntos').textContent = r.puntos;
+    contar($('#r-puntos'), r.puntos);
     $('#r-record-etq').textContent = nuevoRecord ? '🏆 ¡Nuevo récord!' : 'Récord: ' + recordAnterior;
     $('#r-puntos').parentElement.classList.toggle('record', nuevoRecord);
-    $('#r-precision').textContent = Math.round(p * 100) + '%';
+    contar($('#r-precision'), Math.round(p * 100), '%');
     $('#r-aciertos').textContent = r.aciertos + ' de ' + r.total + ' aciertos';
-    $('#r-edad').textContent = r.total ? r.edad : '—';
+    if (r.total) contar($('#r-edad'), r.edad); else $('#r-edad').textContent = '—';
     $('#r-extra-etq').textContent = r.extraEtq; $('#r-extra').textContent = r.extra; $('#r-extra-sub').textContent = r.extraSub;
     $('#r-modo-graf').textContent = NOMBRES[modo];
     dibujarGrafica($('#r-grafica'), N.agruparPorDia(estado.datos.sesiones, modo, 14));
@@ -1920,7 +2052,8 @@ td.num{font-weight:800}
     }).join('');
     $$('[data-record]').forEach(function (el) { const v = estado.datos.mejores[el.dataset.record]; el.textContent = v ? v + ' pts' : '—'; });
     const b = $('#btn-sonido');
-    b.textContent = estado.datos.sonido ? '🔊 Sonido: sí' : '🔇 Sonido: no';
+    b.innerHTML = estado.datos.sonido ? '🔊<span class="txt"> Sonido: sí</span>' : '🔇<span class="txt"> Sonido: no</span>';
+    b.setAttribute('aria-label', estado.datos.sonido ? 'Sonido activado' : 'Sonido desactivado');
     b.setAttribute('aria-pressed', String(estado.datos.sonido));
   }
   $('#selector-ops').addEventListener('click', function (e) {
