@@ -3,43 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#fbf8ef">
+<meta name="theme-color" content="#e8edf2">
 <title>Profe Tuerca · Gimnasio Mental</title>
 <style>
-/* ============ Tokens ============ */
+/* =====================================================================
+   Estilo "consola portátil de doble pantalla": botones brillantes y
+   redondeados, degradados suaves, pantallas con bisel y acento cian.
+   ===================================================================== */
 :root{
-  --papel:#fbf8ef; --cuadricula:#dbe7f3; --margen:#e8968d;
-  --tinta:#1f3a5f; --tinta-suave:#5b6f86; --tinta-tenue:#8a9bb0;
-  --acento:#e07a2e; --acento-suave:#fde7d4;
-  --ok:#2e8b57; --ok-suave:#dff3e7; --mal:#c8423b; --mal-suave:#fbe1df;
-  --tarjeta:#fffdf7; --borde:#c9d6e3; --sombra:0 2px 0 #c9d6e3, 0 8px 24px rgba(31,58,95,.08);
-  --f-mano:"Chalkboard SE","Marker Felt","Segoe Print","Comic Sans MS",cursive;
-  --f-texto:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
-  --f-num:ui-rounded,"SF Pro Rounded","Avenir Next","Segoe UI",system-ui,sans-serif;
-  --radio:16px;
+  --fondo1:#f3f6f9; --fondo2:#e8edf2;
+  --lcd1:#ffffff; --lcd2:#e4ebf1;
+  --panel1:#ffffff; --panel2:#eef2f6;
+  --texto:#2b3846; --texto-suave:#5f6f82; --texto-tenue:#97a3b1;
+  --cian:#19a8e4; --cian-osc:#0a7db6; --cian-claro:#8ee0ff; --cian-suave:#dcf3fd; --cian-texto:#065f8c;
+  --naranja:#f59a1b; --naranja-osc:#c66f00;
+  --ok:#2f9e3a; --ok-suave:#e1f6dc; --mal:#e0413a; --mal-suave:#fde2df;
+  --borde:#c3ccd6;
+  --carcasa1:#454e5c; --carcasa2:#1d2229; --bisel:#0e1114; --led:#35e0ff;
+  --f:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Helvetica Rounded","Varela Round","Nunito","Trebuchet MS",system-ui,sans-serif;
+  --sombra:0 1px 0 rgba(255,255,255,.9) inset, 0 4px 12px rgba(30,50,70,.12), 0 1px 2px rgba(30,50,70,.18);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
-  font-family:var(--f-texto); color:var(--tinta); font-size:18px;
-  background-color:var(--papel);
-  background-image:linear-gradient(var(--cuadricula) 1px,transparent 1px),linear-gradient(90deg,var(--cuadricula) 1px,transparent 1px);
-  background-size:28px 28px;
+  font-family:var(--f); color:var(--texto); font-size:18px;
+  background-color:var(--fondo1);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(25,168,228,.18), transparent 60%),
+    repeating-linear-gradient(-45deg, var(--fondo1) 0 18px, var(--fondo2) 18px 36px);
+  background-attachment:fixed;
   transition:background-color .6s, color .6s;
   -webkit-tap-highlight-color:transparent; overflow-x:hidden;
 }
-body::before{ /* línea de margen del cuaderno */
-  content:""; position:fixed; top:0; bottom:0; left:56px; width:2px; background:var(--margen); opacity:.7; pointer-events:none; z-index:0;
-}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
-button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
-h1,h2,h3{font-family:var(--f-mano);font-weight:700;margin:0}
+button:focus-visible{outline:3px solid var(--cian);outline-offset:2px}
+h1,h2,h3{font-family:var(--f);font-weight:800;margin:0;letter-spacing:-.01em}
 
-/* ============ Demonio ============ */
+/* ---------- Brillo reutilizable ---------- */
+.tarjeta{
+  background:linear-gradient(180deg,var(--panel1),var(--panel2));
+  border:1px solid var(--borde);border-radius:18px;box-shadow:var(--sombra);
+  transition:background .6s,border-color .6s;
+}
+.boton,.boton-icono,.teclado button,.selector-nivel button,.selector-ops button,.pestanas button,.celda{
+  color:#2b3846;border:1px solid #9eabb8;
+  background:linear-gradient(180deg,#ffffff 0%,#f4f7fa 48%,#e1e8ee 52%,#f0f4f7 100%);
+  box-shadow:inset 0 1px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.05), 0 3px 0 #a3afbc, 0 5px 10px rgba(30,50,70,.16);
+  transition:transform .07s, box-shadow .07s, filter .15s;
+}
+.boton:active,.boton-icono:active,.teclado button:active,.teclado button.pulsado,.selector-nivel button:active,.selector-ops button:active,.pestanas button:active,.celda:active{
+  transform:translateY(3px);
+  box-shadow:inset 0 1px 0 #fff, 0 0 0 #a3afbc, 0 2px 4px rgba(30,50,70,.16);
+}
+.boton{border-radius:999px;padding:12px 24px;font-weight:800;font-size:1.05rem}
+.boton.principal,.teclado .t-ok,.selector-nivel button[aria-pressed="true"],.selector-ops button[aria-pressed="true"],.pestanas button[aria-selected="true"]{
+  color:#fff;border-color:var(--cian-osc);text-shadow:0 1px 1px rgba(0,40,70,.35);
+  background:linear-gradient(180deg,var(--cian-claro) 0%,var(--cian) 47%,var(--cian-osc) 53%,var(--cian) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), inset 0 -2px 0 rgba(0,0,0,.08), 0 3px 0 var(--cian-osc), 0 6px 12px rgba(0,110,170,.28);
+}
+.boton.principal:active,.teclado .t-ok:active,.teclado .t-ok.pulsado{box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 0 0 var(--cian-osc), 0 2px 4px rgba(0,110,170,.25)}
+.boton.peligro{color:var(--mal)}
+.boton-icono{border-radius:50%;width:46px;height:46px;font-size:1.15rem;display:inline-grid;place-items:center;flex:none}
+
+/* ---------- Pantallas con bisel ---------- */
+.marco{
+  background:var(--bisel);border-radius:12px;padding:8px;
+  box-shadow:inset 0 0 0 1px #000, inset 0 2px 6px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.18);
+}
+.lcd{
+  position:relative;border-radius:5px;overflow:hidden;
+  background:
+    radial-gradient(rgba(40,70,100,.05) 1px, transparent 1.3px) 0 0/6px 6px,
+    linear-gradient(180deg,var(--lcd1),var(--lcd2));
+  transition:background .6s;
+}
+.lcd::after{ /* reflejo del cristal */
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(160deg,rgba(255,255,255,.28) 0%,rgba(255,255,255,0) 38%);
+}
+
+/* ---------- Demonio ---------- */
 body.modo-demonio{
-  --papel:#3a0707; --cuadricula:rgba(255,90,70,.22); --tinta:#ffeae3; --tinta-suave:#ffb9a8; --tinta-tenue:#d98a7a;
-  --tarjeta:#4d0c0c; --borde:#8e2a20; --sombra:0 2px 0 #1c0202, 0 8px 30px rgba(255,0,0,.25);
-  --margen:#ff4b3a;
+  --fondo1:#3a0707; --fondo2:#2c0404;
+  --lcd1:#5c0c0c; --lcd2:#260202;
+  --panel1:#6a1414; --panel2:#420909;
+  --texto:#ffeae4; --texto-suave:#ffb6a6; --texto-tenue:#d68c7d;
+  --cian:#ff3b2f; --cian-osc:#9c0d0d; --cian-claro:#ff9b8b; --cian-suave:#6e1a14; --cian-texto:#ffd0c6;
+  --borde:#8e2a20; --carcasa1:#6a1010; --carcasa2:#260303; --led:#ff2a1a;
 }
 body.modo-demonio::after{
   content:""; position:fixed; inset:0; pointer-events:none; z-index:50;
@@ -55,146 +105,162 @@ body.modo-demonio::after{
 }
 @keyframes temblor-suave{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
-/* ============ Pantallas ============ */
+/* ---------- Pantallas de la app ---------- */
 #app{position:relative;z-index:1;min-height:100vh;min-height:100dvh}
-.pantalla{display:none;min-height:100vh;min-height:100dvh;padding:16px 16px 24px 72px}
+.pantalla{display:none;min-height:100vh;min-height:100dvh;padding:18px 16px 28px}
 .pantalla.activa{display:block}
-@media (max-width:640px){ body::before{left:10px} .pantalla{padding:12px 16px 20px 22px} }
 
-.tarjeta{background:var(--tarjeta);border:2px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);transition:background-color .6s,border-color .6s}
-.boton{
-  border:2px solid var(--tinta);background:var(--tarjeta);border-radius:12px;padding:12px 20px;
-  font-weight:700;font-size:1.05rem;box-shadow:0 3px 0 var(--tinta);transition:transform .08s, box-shadow .08s;
-}
-.boton:active{transform:translateY(3px);box-shadow:0 0 0 var(--tinta)}
-.boton.principal{background:var(--acento);border-color:#9b4a12;color:#fff;box-shadow:0 3px 0 #9b4a12}
-.boton.principal:active{box-shadow:0 0 0 #9b4a12}
-.boton.peligro{border-color:var(--mal);color:var(--mal);box-shadow:0 3px 0 var(--mal)}
-.boton-icono{border:2px solid var(--borde);background:var(--tarjeta);border-radius:12px;width:48px;height:48px;font-size:1.3rem;display:inline-grid;place-items:center}
-
-/* ============ Menú ============ */
-.menu{max-width:1060px;margin:0 auto}
-.cabecera-menu{display:flex;align-items:center;gap:20px;margin:8px 0 22px}
-.cabecera-menu .prof{width:140px;flex:none}
-.cabecera-menu h1{font-size:clamp(1.9rem,4.5vw,3rem);line-height:1.05}
-.cabecera-menu p{margin:8px 0 0;color:var(--tinta-suave);font-size:1.1rem}
+/* ---------- Menú ---------- */
+.menu{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.banner{max-width:760px;width:100%;margin:0 auto}
+.cabecera-menu,.cab-resultados{display:flex;align-items:center;gap:18px;padding:14px 22px}
+.cabecera-menu .prof{width:120px;flex:none}
+.cabecera-menu h1{font-size:clamp(1.6rem,4vw,2.5rem);line-height:1.08}
+.cabecera-menu h1 span{color:var(--cian)}
+.cabecera-menu p{margin:8px 0 0;color:var(--texto-suave);font-size:1.02rem}
 .modos{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
-.modo{padding:20px;display:flex;flex-direction:column;gap:12px}
-.modo h2{font-size:1.6rem;display:flex;align-items:center;gap:10px}
-.modo .emoji{font-size:1.6rem}
-.modo p{margin:0;color:var(--tinta-suave);line-height:1.45}
-.modo .record{font-family:var(--f-num);font-weight:700;color:var(--tinta)}
+.modo{padding:18px;display:flex;flex-direction:column;gap:12px}
+.modo h2{font-size:1.35rem;display:flex;align-items:center;gap:12px}
+.modo .emoji{
+  width:54px;height:54px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:1.7rem;
+  background:linear-gradient(180deg,#bff0ff 0%,#5fcaf3 50%,#2eb3ea 52%,#62cdf4 100%);
+  border:1px solid var(--cian-osc);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 6px rgba(0,100,160,.25);
+}
+.modo:nth-child(2) .emoji{background:linear-gradient(180deg,#d9ffc9 0%,#86dc63 50%,#5cc436 52%,#8be06a 100%);border-color:#3b8f1f}
+.modo:nth-child(3) .emoji{background:linear-gradient(180deg,#ffe6bf 0%,#ffb950 50%,#f59a1b 52%,#ffbe5c 100%);border-color:#c66f00}
+.modo p{margin:0;color:var(--texto-suave);line-height:1.45}
+.modo .record{font-weight:800;color:var(--texto)}
 .modo .boton{margin-top:auto}
-.modo.destacado{border-color:var(--acento);border-width:3px}
+.modo.destacado{border:2px solid var(--cian)}
 .selector-nivel{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.selector-nivel button{border:2px solid var(--borde);background:var(--papel);border-radius:10px;padding:6px 0;line-height:1.1}
-.selector-nivel button b{display:block;font-family:var(--f-num);font-size:1.2rem}
-.selector-nivel button small{font-size:.7rem;color:var(--tinta-suave)}
-.selector-nivel button[aria-pressed="true"]{border-color:var(--acento);background:var(--acento-suave)}
+.selector-nivel button{border-radius:12px;padding:6px 0;line-height:1.1}
+.selector-nivel button b{display:block;font-size:1.2rem}
+.selector-nivel button small{font-size:.66rem;opacity:.75}
 .operaciones-menu{display:flex;flex-direction:column;gap:6px}
-.etq-ops{font-size:.85rem;font-weight:700;color:var(--tinta-suave);text-transform:uppercase;letter-spacing:.05em}
+.etq-ops{font-size:.8rem;font-weight:800;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.06em}
 .selector-ops{display:flex;flex-wrap:wrap;gap:6px}
-.selector-ops button{border:2px solid var(--borde);background:var(--papel);border-radius:999px;padding:5px 12px;font-size:.92rem;font-weight:600;color:var(--tinta-tenue);text-decoration:line-through}
-.selector-ops button .sim{font-family:var(--f-num);font-weight:800}
-.selector-ops button[aria-pressed="true"]{border-color:var(--acento);background:var(--acento-suave);color:#7a3c0c;text-decoration:none}
-.pie-menu{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center}
-.pie-menu .nota{color:var(--tinta-tenue);font-size:.9rem;margin-left:auto}
+.selector-ops button{border-radius:999px;padding:5px 12px;font-size:.9rem;font-weight:700;color:#8a96a4}
+.selector-ops button .sim{font-weight:900}
+.pie-menu{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.pie-menu .nota{color:var(--texto-tenue);font-size:.88rem;margin-left:auto}
 
-/* ============ Juego ============ */
-.barra-superior{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.barra-superior h2{font-size:1.4rem;flex:1;min-width:150px}
-.marcadores{display:flex;gap:10px}
-.marcador{padding:6px 12px;text-align:center;min-width:78px}
-.marcador small{display:block;font-size:.72rem;color:var(--tinta-suave);text-transform:uppercase;letter-spacing:.06em}
-.marcador b{font-family:var(--f-num);font-size:1.35rem}
-.barra-tiempo{height:12px;border-radius:8px;background:var(--borde);overflow:hidden;margin:12px 0 4px}
-.barra-tiempo>div{height:100%;width:100%;background:var(--tinta);transform-origin:left;transition:background-color .4s}
-.etiqueta-tiempo{font-size:.85rem;color:var(--tinta-suave);display:flex;justify-content:space-between}
-
-.zona-juego{display:grid;grid-template-columns:240px minmax(0,1fr) 320px;gap:20px;margin-top:14px;align-items:start}
-.zona-profe{display:flex;flex-direction:column;align-items:center;gap:10px}
-.zona-profe .prof{width:200px}
-.bocadillo{
-  position:relative;padding:10px 14px;font-family:var(--f-mano);font-size:1.05rem;text-align:center;min-height:56px;width:100%;
-  display:grid;place-items:center;
+/* ---------- Consola de juego ---------- */
+#pantalla-juego{padding-top:14px}
+.consola{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+.carcasa{
+  width:100%;position:relative;
+  background:linear-gradient(180deg,var(--carcasa1),var(--carcasa2));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -3px 8px rgba(0,0,0,.45), 0 12px 30px rgba(10,20,30,.28);
+  transition:background .6s;
 }
-.bocadillo::before{content:"";position:absolute;top:-10px;left:50%;margin-left:-10px;border:10px solid transparent;border-top:0;border-bottom-color:var(--borde)}
-.zona-central{display:flex;flex-direction:column;gap:14px;min-width:0}
-.zona-teclado{display:flex;flex-direction:column;gap:10px}
+.carcasa-sup{border-radius:28px 28px 12px 12px;padding:16px 18px 18px;display:grid;grid-template-columns:30px minmax(0,1fr) 30px;gap:12px;align-items:center}
+.altavoz{height:90px;border-radius:8px;background-image:radial-gradient(#07090b 2.2px,transparent 2.8px);background-size:10px 10px;opacity:.8}
+.bisagra{
+  width:calc(100% - 36px);height:16px;margin:-3px 0;position:relative;z-index:2;border-radius:8px;
+  background:linear-gradient(180deg,#0f1215 0%,#59626f 40%,#2a3038 70%,#121519 100%);
+  box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+.carcasa-inf{border-radius:12px 12px 32px 32px;padding:18px 18px 28px;display:flex;justify-content:center}
+.pantalla-inf{width:80%}
+.led{position:absolute;right:26px;bottom:12px;width:9px;height:9px;border-radius:50%;background:var(--led);box-shadow:0 0 8px var(--led),0 0 2px #fff inset}
+
+.lcd-sup{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px;min-height:330px}
+.barra-superior{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lcd-sup .barra-superior{
+  margin:0 -14px;padding:6px 10px;border-bottom:1px solid var(--borde);
+  background:linear-gradient(180deg,var(--panel1),var(--panel2));
+}
+.lcd-sup .boton-icono{width:36px;height:36px;font-size:.95rem}
+.barra-superior h2{font-size:1.15rem;flex:1;min-width:120px}
+.marcadores{display:flex;gap:6px}
+.marcador{padding:3px 10px;text-align:center;min-width:64px;border-radius:12px}
+.marcador small{display:block;font-size:.62rem;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.marcador b{font-size:1.1rem}
+.barra-tiempo{height:10px;border-radius:6px;background:rgba(120,140,160,.25);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.barra-tiempo>div,.barra-op>div{
+  height:100%;width:100%;transform-origin:left;transition:background-color .4s;
+  background:linear-gradient(180deg,var(--cian-claro),var(--cian) 55%,var(--cian-osc));
+}
+.etiqueta-tiempo{font-size:.78rem;color:var(--texto-suave);display:flex;justify-content:space-between;margin-top:-4px}
+.contenido-sup{display:grid;grid-template-columns:170px minmax(0,1fr);gap:14px;align-items:start}
+.zona-profe{display:flex;flex-direction:column;align-items:center;gap:8px}
+.zona-profe .prof{width:150px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18))}
+.bocadillo{position:relative;padding:8px 12px;font-size:.95rem;font-weight:700;text-align:center;min-height:48px;width:100%;display:grid;place-items:center;border-radius:16px}
+.bocadillo::before{content:"";position:absolute;top:-9px;left:50%;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--borde)}
+.zona-central{display:flex;flex-direction:column;gap:10px;min-width:0}
 .vista{display:none}
-.vista.activa{display:flex;flex-direction:column;gap:14px}
+.vista.activa{display:flex;flex-direction:column;gap:10px}
 
-/* cola diabólica */
-.info-nivel{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:1rem;color:var(--tinta-suave)}
-.chip{border:2px solid var(--borde);border-radius:999px;padding:3px 12px;background:var(--tarjeta);font-weight:700;color:var(--tinta)}
-.chip.n{border-color:var(--acento);color:var(--acento)}
-.cola{display:flex;gap:10px;align-items:stretch;justify-content:center;flex-wrap:wrap}
+.info-nivel{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{
+  border:1px solid var(--borde);border-radius:999px;padding:2px 12px;font-weight:800;font-size:.9rem;color:var(--texto);
+  background:linear-gradient(180deg,var(--panel1),var(--panel2));box-shadow:inset 0 1px 0 rgba(255,255,255,.7)
+}
+.chip.n{border-color:var(--cian-osc);color:#fff;background:linear-gradient(180deg,var(--cian-claro),var(--cian) 55%);text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.cola{display:flex;gap:8px;align-items:stretch;justify-content:center;flex-wrap:wrap}
 .casilla-cola{
-  flex:1 1 0;min-width:84px;max-width:150px;padding:10px 6px;text-align:center;border:2px dashed var(--borde);border-radius:14px;
-  background:var(--tarjeta);position:relative;
+  flex:1 1 0;min-width:80px;max-width:150px;padding:6px;text-align:center;border:2px dashed var(--borde);border-radius:14px;
+  background:rgba(255,255,255,.35);
 }
-.casilla-cola small{display:block;font-size:.72rem;color:var(--tinta-tenue)}
-.casilla-cola b{font-family:var(--f-num);font-size:1.8rem}
-.casilla-cola.objetivo{border:3px solid var(--acento);background:var(--acento-suave);color:#7a3c0c}
-.casilla-cola.objetivo small{color:#9b4a12;font-weight:700}
-.casilla-cola.actual{border-style:solid;border-color:var(--tinta)}
-.operacion-actual{padding:22px 16px 16px;text-align:center;position:relative;overflow:hidden}
-.operacion-actual .etq{font-family:var(--f-mano);color:var(--tinta-suave);font-size:1.15rem}
-.operacion-actual .op{font-family:var(--f-num);font-weight:800;font-size:clamp(3.4rem,11vw,6.5rem);line-height:1.05;letter-spacing:.02em}
-.operacion-actual .op.larga{font-size:clamp(2rem,6.5vw,3.8rem);padding:.35em 0}
-.casilla-cola.larga b{font-size:1.05rem}
+.casilla-cola small{display:block;font-size:.7rem;color:var(--texto-tenue);font-weight:700}
+.casilla-cola b{font-size:1.5rem;font-weight:900}
+.casilla-cola.objetivo{border:2px solid var(--cian);background:var(--cian-suave);color:var(--cian-texto);animation:latir 1.4s ease-in-out infinite}
+.casilla-cola.objetivo small{color:var(--cian-texto)}
+@keyframes latir{50%{box-shadow:0 0 0 4px rgba(25,168,228,.25)}}
+.casilla-cola.actual{border-style:solid;border-color:var(--texto-tenue)}
+.casilla-cola.larga b{font-size:1rem}
+.operacion-actual{padding:12px 16px;text-align:center;position:relative;overflow:hidden}
+.operacion-actual .etq{color:var(--texto-suave);font-size:1rem;font-weight:700}
+.operacion-actual .op{
+  font-weight:900;font-size:clamp(3.2rem,9vw,5.6rem);line-height:1.05;letter-spacing:.02em;
+  text-shadow:0 2px 0 rgba(255,255,255,.6), 0 6px 10px rgba(0,40,80,.18);
+}
+.operacion-actual .op.larga{font-size:clamp(2rem,5.5vw,3.4rem);padding:.3em 0}
 .operacion-actual .op.entra{animation:entra .28s ease-out}
-@keyframes entra{from{transform:translateY(16px) scale(.92);opacity:0}to{transform:none;opacity:1}}
-.barra-op{height:10px;border-radius:6px;background:var(--borde);overflow:hidden;margin-top:10px}
-.barra-op>div{height:100%;background:var(--acento);transform-origin:left}
-.instruccion{font-size:1.1rem;text-align:center;min-height:1.5em}
-.instruccion b{color:var(--acento)}
+@keyframes entra{from{transform:translateY(14px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+.barra-op{height:9px;border-radius:6px;background:rgba(120,140,160,.25);overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.barra-op>div{background:linear-gradient(180deg,#ffd27a,var(--naranja) 55%,var(--naranja-osc))}
+.instruccion{font-size:1rem;text-align:center;min-height:1.4em;font-weight:600}
+.instruccion b{color:var(--cian)}
 
-/* teclado */
+/* ---------- Pantalla táctil inferior ---------- */
+.lcd-inf{padding:14px}
+.zona-teclado{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,290px);gap:14px;align-items:center}
+.columna-info{display:flex;flex-direction:column;gap:10px}
 .pantalla-num{
-  padding:10px 14px;text-align:right;font-family:var(--f-num);font-weight:800;font-size:3rem;min-height:84px;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 14px;font-weight:900;font-size:2.8rem;min-height:84px;border-radius:16px;
+  display:flex;flex-direction:column;align-items:flex-end;justify-content:center;
+  background:linear-gradient(180deg,#f7fbfd,#dfe9f0);color:#2b3846;box-shadow:inset 0 2px 5px rgba(0,0,0,.15);
 }
-.pantalla-num .pista{font-family:var(--f-texto);font-size:.95rem;font-weight:600;color:var(--tinta-suave);text-align:left}
-.pantalla-num.ok{background:var(--ok-suave);border-color:var(--ok)}
-.pantalla-num.mal{background:var(--mal-suave);border-color:var(--mal)}
-body.modo-demonio .pantalla-num.ok,body.modo-demonio .pantalla-num.mal{color:#1f3a5f}
-.teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.teclado button{
-  border:2px solid var(--tinta);background:var(--tarjeta);border-radius:14px;font-family:var(--f-num);font-weight:800;
-  font-size:2rem;min-height:66px;box-shadow:0 4px 0 var(--tinta);transition:transform .06s, box-shadow .06s;user-select:none;-webkit-user-select:none;
-}
-.teclado button:active,.teclado button.pulsado{transform:translateY(4px);box-shadow:0 0 0 var(--tinta)}
-.teclado .t-ok{background:var(--acento);border-color:#9b4a12;color:#fff;box-shadow:0 4px 0 #9b4a12}
-.teclado .t-borrar{font-size:1.5rem}
-.feedback{min-height:2.6em;font-weight:700;text-align:center;font-size:1.05rem;padding:6px 8px;border-radius:10px}
-.feedback.ok{color:var(--ok);background:var(--ok-suave)}
-.feedback.mal{color:var(--mal);background:var(--mal-suave)}
-.feedback.info{color:var(--tinta-suave)}
+.pantalla-num .pista{font-size:.85rem;font-weight:700;color:#5f6f82;align-self:flex-start}
+.pantalla-num.ok{background:linear-gradient(180deg,#f2fff0,#cdeec6);border-color:var(--ok)}
+.pantalla-num.mal{background:linear-gradient(180deg,#fff3f2,#f6cdc9);border-color:var(--mal)}
+.teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.teclado button{border-radius:14px;font-weight:900;font-size:1.7rem;min-height:54px;user-select:none;-webkit-user-select:none}
+.teclado .t-borrar{font-size:1.3rem}
+.feedback{min-height:2.4em;font-weight:800;text-align:center;font-size:.98rem;padding:6px 10px;border-radius:12px;display:grid;place-items:center}
+.feedback.ok{color:#1f7a29;background:var(--ok-suave);border:1px solid #9fd897}
+.feedback.mal{color:#b3261f;background:var(--mal-suave);border:1px solid #f0a8a2}
+.feedback.info{color:var(--texto-suave)}
 
-/* posiciones */
-.cuadricula{display:grid;gap:8px;width:100%;max-width:460px;margin:0 auto;aspect-ratio:1}
-.celda{
-  border:2px solid var(--borde);background:var(--tarjeta);border-radius:12px;font-family:var(--f-num);font-weight:800;
-  font-size:clamp(1.6rem,5vw,2.4rem);display:grid;place-items:center;transition:background-color .15s, transform .1s;
-}
-.celda:active{transform:scale(.96)}
-.celda.con-num{background:var(--acento-suave);border-color:var(--acento);color:#7a3c0c}
-.celda.oculta{background:var(--tarjeta);border-color:var(--borde)}
-.celda.bien{background:var(--ok-suave);border-color:var(--ok);color:var(--ok)}
-.celda.error{background:var(--mal-suave);border-color:var(--mal);color:var(--mal)}
-.celda.faltaba{border-style:dashed;border-color:var(--acento);color:var(--acento)}
+/* Memoria de posiciones (en la pantalla táctil) */
+.cuadricula{display:grid;grid-auto-rows:1fr;gap:8px;width:100%;max-width:min(380px,40vh);margin:0 auto;aspect-ratio:1}
+.celda{border-radius:14px;font-weight:900;font-size:clamp(1.5rem,5vw,2.2rem);display:grid;place-items:center}
+.celda.con-num{color:#fff;border-color:var(--naranja-osc);text-shadow:0 1px 1px rgba(0,0,0,.3);background:linear-gradient(180deg,#ffd796 0%,#ffb441 48%,var(--naranja) 52%,#ffb84d 100%)}
+.celda.bien{color:#fff;border-color:#237a2c;text-shadow:0 1px 1px rgba(0,0,0,.3);background:linear-gradient(180deg,#bff0b3 0%,#66c95a 48%,var(--ok) 52%,#5fc653 100%)}
+.celda.error{color:#fff;border-color:#a31d17;background:linear-gradient(180deg,#ffb8b2 0%,#f0645c 48%,var(--mal) 52%,#ef5f57 100%)}
+.celda.faltaba{color:var(--naranja-osc);border:2px dashed var(--naranja)}
 
-/* doble tarea */
-.escenario-doble{padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.objetivo-doble{font-family:var(--f-mano);font-size:1.3rem}
-.objetivo-doble span{font-size:2rem}
-.op-doble{font-family:var(--f-num);font-weight:800;font-size:clamp(2.2rem,7vw,3.6rem)}
-.flujo{height:150px;width:100%;position:relative;border-top:2px dashed var(--borde)}
-.flujo span{position:absolute;font-size:5rem;line-height:1;transform:translate(-50%,-50%);animation:aparece .18s ease-out}
+/* Doble tarea */
+.escenario-doble{padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.objetivo-doble{font-size:1.2rem;font-weight:800}
+.objetivo-doble span{font-size:1.8rem}
+.op-doble{font-weight:900;font-size:clamp(2rem,6vw,3.2rem)}
+.flujo{height:130px;width:100%;position:relative;border-top:2px dashed var(--borde)}
+.flujo span{position:absolute;font-size:4.6rem;line-height:1;transform:translate(-50%,-50%);animation:aparece .18s ease-out;filter:drop-shadow(0 4px 4px rgba(0,0,0,.25))}
 @keyframes aparece{from{transform:translate(-50%,-50%) scale(.4);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
 
-/* ============ Profe Tuerca ============ */
+/* ---------- Profe Tuerca ---------- */
 .prof{position:relative}
 .prof svg{width:100%;height:auto;display:block;overflow:visible}
 .prof .respira{animation:respirar 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
@@ -237,111 +303,124 @@ body.modo-demonio .pantalla-num.ok,body.modo-demonio .pantalla-num.mal{color:#1f
 .prof.calmando{animation:calmar .6s ease-out}
 @keyframes calmar{40%{transform:scale(.94)}100%{transform:none}}
 
-/* ============ Capas ============ */
-.capa{position:fixed;inset:0;background:rgba(20,32,52,.55);display:none;place-items:center;z-index:100;padding:16px}
+/* ---------- Capas ---------- */
+.capa{position:fixed;inset:0;background:rgba(10,20,32,.55);display:none;place-items:center;z-index:100;padding:16px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .capa.activa{display:grid}
-.capa .tarjeta{padding:26px;max-width:420px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;background:#fffdf7;color:#1f3a5f}
-.capa h2{font-size:2.2rem}
+.capa .tarjeta{padding:24px;max-width:400px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#fff,#e9eff4);color:#2b3846;border-radius:24px}
+.capa h2{font-size:2rem}
 .aviso{
-  position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120px);z-index:120;padding:10px 20px;font-weight:700;
-  background:var(--tinta);color:var(--papel);border-radius:999px;transition:transform .3s;max-width:calc(100% - 32px);text-align:center
+  position:fixed;left:50%;top:16px;transform:translateX(-50%) translateY(-120px);z-index:120;padding:10px 22px;font-weight:800;color:#fff;
+  background:linear-gradient(180deg,var(--cian-claro),var(--cian) 55%,var(--cian-osc));border:1px solid var(--cian-osc);
+  text-shadow:0 1px 1px rgba(0,0,0,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 6px 16px rgba(0,60,100,.3);
+  border-radius:999px;transition:transform .3s cubic-bezier(.3,1.5,.5,1);max-width:calc(100% - 32px);text-align:center
 }
 .aviso.visible{transform:translateX(-50%) translateY(0)}
 
-/* ============ Resultados / historial ============ */
-.resultados,.historial{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-.cab-resultados{display:flex;align-items:center;gap:18px}
-.cab-resultados .prof{width:130px;flex:none}
-.cab-resultados h1{font-size:clamp(1.8rem,4vw,2.6rem)}
-.cab-resultados p{margin:6px 0 0;font-family:var(--f-mano);font-size:1.2rem;color:var(--tinta-suave)}
+/* ---------- Resultados / historial ---------- */
+.resultados,.historial{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.cab-resultados .prof{width:110px;flex:none}
+.cab-resultados h1{font-size:clamp(1.6rem,4vw,2.3rem)}
+.cab-resultados p{margin:6px 0 0;font-size:1.1rem;font-weight:700;color:var(--texto-suave)}
 .cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .cifra{padding:14px 16px}
-.cifra small{display:block;color:var(--tinta-suave);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}
-.cifra b{font-family:var(--f-num);font-size:2.3rem;line-height:1.15}
-.cifra span{display:block;font-size:.9rem;color:var(--tinta-suave)}
-.cifra.record{border-color:var(--acento);background:var(--acento-suave);color:#7a3c0c}
+.cifra small{display:block;color:var(--texto-suave);font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.cifra b{font-size:2.3rem;font-weight:900;line-height:1.15}
+.cifra span{display:block;font-size:.88rem;color:var(--texto-suave)}
+.cifra.record{border:2px solid var(--naranja);background:linear-gradient(180deg,#fff7e8,#ffe2b3);color:#7a4300}
+.cifra.record span,.cifra.record small{color:#9a5800}
 .bloque-grafica{padding:16px}
-.bloque-grafica h3{font-size:1.25rem;margin-bottom:6px}
+.bloque-grafica h3{font-size:1.15rem;margin-bottom:6px}
 .grafica svg{width:100%;height:auto;display:block}
-.grafica .vacio{color:var(--tinta-suave);padding:24px 0;text-align:center}
+.grafica .vacio{color:var(--texto-suave);padding:24px 0;text-align:center}
 .acciones{display:flex;gap:12px;flex-wrap:wrap}
+.historial .barra-superior h2{font-size:1.6rem}
 .pestanas{display:flex;gap:8px;flex-wrap:wrap}
-.pestanas button{border:2px solid var(--borde);background:var(--tarjeta);border-radius:999px;padding:8px 16px;font-weight:700}
-.pestanas button[aria-selected="true"]{border-color:var(--acento);background:var(--acento-suave);color:#7a3c0c}
+.pestanas button{border-radius:999px;padding:8px 18px;font-weight:800}
 table{width:100%;border-collapse:collapse;font-size:.95rem}
 th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--borde)}
-th{color:var(--tinta-suave);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
-td.num{font-family:var(--f-num);font-weight:700}
+th{color:var(--texto-suave);font-weight:800;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+td.num{font-weight:800}
 
-/* ============ Responsive ============ */
-@media (max-width:1080px){
-  .zona-juego{grid-template-columns:minmax(0,1fr) 300px}
-  .zona-profe{grid-column:1 / -1;flex-direction:row;justify-content:center}
-  .zona-profe .prof{width:96px;flex:none}
-  .bocadillo{max-width:440px;width:auto;flex:1}
-  .bocadillo::before{top:50%;left:-10px;margin:-10px 0 0;border:10px solid transparent;border-left:0;border-right-color:var(--borde)}
+/* ---------- Responsive ---------- */
+@media (min-width:761px) and (max-height:880px){
+  #pantalla-juego{padding-top:6px;padding-bottom:6px}
+  .carcasa-sup{padding:10px 16px 12px}
+  .carcasa-inf{padding:12px 16px 20px}
+  .lcd-sup{min-height:0}
+  .zona-profe .prof{width:120px}
+  .contenido-sup{grid-template-columns:150px minmax(0,1fr)}
+  .operacion-actual .op{font-size:clamp(3rem,8vw,4.8rem)}
+  .teclado button{min-height:48px}
+  .lcd-inf{padding:10px 14px}
 }
 @media (max-width:760px){
-  .zona-juego{grid-template-columns:minmax(0,1fr);gap:12px}
-  .zona-profe .prof{width:76px}
-  .teclado button{min-height:58px;font-size:1.8rem}
-  .pantalla-num{font-size:2.4rem;min-height:68px}
-  .cabecera-menu .prof{width:96px}
-  .marcador{min-width:64px;padding:4px 8px}
-  .casilla-cola{min-width:70px}
-  .casilla-cola b{font-size:1.4rem}
-  .flujo{height:120px}
-  .flujo span{font-size:4rem}
-  /* Juego compacto: todo cabe en la pantalla del móvil sin desplazarse */
-  #pantalla-juego{padding-top:8px;padding-bottom:8px}
-  #pantalla-juego .barra-superior h2{display:none}
-  .barra-tiempo{margin:8px 0 2px}
-  .zona-profe{gap:8px}
-  .zona-profe .prof{width:58px}
-  .bocadillo{min-height:0;padding:6px 10px;font-size:.95rem}
-  .zona-central,.vista.activa{gap:8px}
-  .info-nivel{font-size:.85rem;gap:6px}
-  .chip{padding:1px 10px}
-  .operacion-actual{padding:8px 10px 10px}
-  .operacion-actual .etq{font-size:.95rem}
-  .operacion-actual .op{font-size:3.2rem}
-  .barra-op{margin-top:6px}
-  .casilla-cola{padding:4px;min-width:60px}
-  .casilla-cola.actual{display:none}
-  .casilla-cola b{font-size:1.2rem}
-  #vista-diabolico .instruccion{display:none}
-  .instruccion{font-size:.95rem}
-  .zona-teclado{gap:8px}
-  .pantalla-num{min-height:56px;font-size:2.1rem;padding:4px 12px}
-  .teclado{gap:8px}
-  .teclado button{min-height:52px;font-size:1.7rem}
-  .feedback{min-height:1.8em;font-size:.95rem;padding:3px 8px}
+  .pantalla{padding:12px 12px 20px}
+  .cabecera-menu,.cab-resultados{padding:12px 14px;gap:12px}
+  .cabecera-menu .prof{width:80px}
+  .cab-resultados .prof{width:80px}
+  .pie-menu .nota{display:none}
+
+  #pantalla-juego{padding:6px}
+  .carcasa-sup{grid-template-columns:minmax(0,1fr);padding:7px;border-radius:18px 18px 8px 8px}
+  .altavoz{display:none}
+  .bisagra{height:10px;width:calc(100% - 20px)}
+  .carcasa-inf{padding:7px 7px 14px;border-radius:8px 8px 20px 20px}
+  .pantalla-inf{width:100%}
+  .led{right:14px;bottom:4px;width:6px;height:6px}
+  .marco{padding:4px;border-radius:8px}
+  .lcd-sup{padding:0 8px 8px;gap:6px;min-height:0}
+  .lcd-sup .barra-superior{margin:0 -8px;padding:4px 6px}
+  .barra-superior h2{display:none}
+  .marcadores{margin-left:auto}
+  .marcador{min-width:58px;padding:1px 6px}
   .etiqueta-tiempo{display:none}
-  .marcador{padding:2px 8px}
-  .marcador small{font-size:.62rem}
-  .marcador b{font-size:1.1rem}
-  .boton-icono{width:42px;height:42px}
-  .casilla-cola{display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 6px}
-  .casilla-cola small{font-size:.7rem}
-}
-@media (max-width:760px) and (max-height:760px){
-  .zona-profe .prof{width:44px}
-  .bocadillo{font-size:.85rem;padding:4px 8px}
-  .operacion-actual .etq{display:none}
-  .operacion-actual .op{font-size:2.7rem}
-  .pantalla-num{min-height:46px;font-size:1.8rem}
+  .contenido-sup{grid-template-columns:minmax(0,1fr);gap:6px}
+  .zona-profe{flex-direction:row;gap:8px}
+  .zona-profe .prof{width:54px;flex:none}
+  .bocadillo{min-height:0;padding:5px 10px;font-size:.85rem;text-align:left;place-items:center start}
+  .bocadillo::before{top:50%;left:-9px;margin:-9px 0 0;border:9px solid transparent;border-left:0;border-right-color:var(--borde)}
+  .zona-central,.vista.activa{gap:6px}
+  .chip{font-size:.78rem;padding:1px 9px}
+  .operacion-actual{padding:6px 10px 8px}
+  .operacion-actual .etq{font-size:.85rem}
+  .operacion-actual .op{font-size:3rem}
+  .operacion-actual .op.larga{font-size:clamp(1.6rem,7.5vw,2.4rem)}
+  .barra-op{margin-top:4px}
+  .casilla-cola{display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 6px;min-width:60px}
+  .casilla-cola.actual{display:none}
+  .casilla-cola b{font-size:1.15rem}
+  #vista-diabolico .instruccion{display:none}
+  .instruccion{font-size:.9rem}
+  .lcd-inf{padding:8px}
+  .zona-teclado{grid-template-columns:minmax(0,1fr);gap:6px}
+  .columna-info{flex-direction:column-reverse;gap:6px}
+  .pantalla-num{min-height:0;font-size:1.9rem;padding:2px 12px;flex-direction:row;align-items:center;justify-content:space-between}
+  .pantalla-num .pista{align-self:center}
+  .feedback{min-height:1.9em;font-size:.88rem;padding:2px 8px}
   .teclado{gap:6px}
-  .teclado button{min-height:44px;font-size:1.5rem;box-shadow:0 3px 0 var(--tinta)}
-  .teclado .t-ok{box-shadow:0 3px 0 #9b4a12}
+  .teclado button{min-height:46px;font-size:1.5rem}
+  .flujo{height:100px}
+  .flujo span{font-size:3.6rem}
+  .cuadricula{max-width:min(340px,48vh)}
+}
+@media (max-width:760px) and (max-height:700px){
+  .zona-profe .prof{width:40px}
+  .bocadillo{font-size:.8rem;padding:3px 8px}
+  .operacion-actual .etq{display:none}
+  .operacion-actual .op{font-size:2.5rem}
+  .teclado button{min-height:40px;font-size:1.35rem;box-shadow:inset 0 1px 0 #fff,0 2px 0 #a3afbc}
+  .teclado .t-ok{box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 0 var(--cian-osc)}
+  .feedback{min-height:1.6em}
 }
 @media (max-width:760px) and (max-height:600px){
   .zona-profe{display:none}
   .info-nivel{display:none}
-  .teclado button{min-height:40px}
+  .teclado button{min-height:36px}
+  .boton-icono{width:32px;height:32px}
 }
 @media (prefers-reduced-motion:reduce){
   .temblor{animation:temblor-suave .35s both}
-  .prof .respira,.prof .ojos,body.modo-demonio::after{animation:none}
+  .prof .respira,.prof .ojos,body.modo-demonio::after,.casilla-cola.objetivo{animation:none}
 }
 </style>
 </head>
@@ -351,13 +430,13 @@ td.num{font-family:var(--f-num);font-weight:700}
 <!-- ================= MENÚ ================= -->
 <section id="pantalla-menu" class="pantalla activa" aria-label="Menú principal">
   <div class="menu">
-    <div class="cabecera-menu">
+    <div class="marco banner"><div class="lcd cabecera-menu">
       <div class="prof tranquilo" data-prof></div>
       <div>
-        <h1>El Gimnasio Mental<br>del Profe Tuerca</h1>
+        <h1>El Gimnasio Mental<br>del <span>Profe Tuerca</span></h1>
         <p>Cálculo y memoria de trabajo. Cuidado: si fallas mucho, el profe pierde los tornillos.</p>
       </div>
-    </div>
+    </div></div>
 
     <div class="modos">
       <article class="tarjeta modo destacado">
@@ -395,6 +474,10 @@ td.num{font-family:var(--f-num);font-weight:700}
 
 <!-- ================= JUEGO ================= -->
 <section id="pantalla-juego" class="pantalla" aria-label="Partida">
+  <div class="consola" id="zona-juego">
+    <div class="carcasa carcasa-sup">
+      <div class="altavoz" aria-hidden="true"></div>
+      <div class="marco"><div class="lcd lcd-sup">
   <div class="barra-superior">
     <button class="boton-icono" id="btn-pausa" aria-label="Pausa">⏸</button>
     <h2 id="titulo-modo">Cálculo diabólico</h2>
@@ -406,13 +489,11 @@ td.num{font-family:var(--f-num);font-weight:700}
   </div>
   <div class="barra-tiempo"><div id="relleno-tiempo"></div></div>
   <div class="etiqueta-tiempo"><span id="etq-tiempo-izq">Tiempo de sesión</span><span id="etq-tiempo-der">5:00</span></div>
-
-  <div class="zona-juego" id="zona-juego">
+      <div class="contenido-sup">
     <aside class="zona-profe">
       <div class="prof tranquilo" id="profe-juego" data-prof></div>
       <div class="bocadillo tarjeta" id="bocadillo" aria-live="polite">¡A calentar neuronas!</div>
     </aside>
-
     <main class="zona-central">
       <!-- Cálculo diabólico -->
       <div class="vista" id="vista-diabolico">
@@ -437,7 +518,6 @@ td.num{font-family:var(--f-num);font-weight:700}
           <span class="chip n"><span id="p-k">3</span> números</span>
         </div>
         <div class="instruccion" id="p-instruccion">Memoriza las posiciones…</div>
-        <div class="cuadricula" id="p-cuadricula"></div>
       </div>
 
       <!-- Doble tarea -->
@@ -453,16 +533,28 @@ td.num{font-family:var(--f-num);font-weight:700}
         <div class="instruccion" id="t-instruccion"></div>
       </div>
     </main>
-
-    <div class="zona-teclado" id="zona-teclado">
-      <div class="pantalla-num tarjeta" id="pantalla-num"><span class="pista" id="pista-num">Resultado</span><span id="valor-num">_</span></div>
-      <div class="teclado" id="teclado">
-        <button data-tecla="7">7</button><button data-tecla="8">8</button><button data-tecla="9">9</button>
-        <button data-tecla="4">4</button><button data-tecla="5">5</button><button data-tecla="6">6</button>
-        <button data-tecla="1">1</button><button data-tecla="2">2</button><button data-tecla="3">3</button>
-        <button data-tecla="borrar" class="t-borrar" aria-label="Borrar">⌫</button><button data-tecla="0">0</button><button data-tecla="ok" class="t-ok" aria-label="Confirmar">OK</button>
       </div>
-      <div class="feedback info" id="feedback" aria-live="polite">&nbsp;</div>
+      </div></div>
+      <div class="altavoz" aria-hidden="true"></div>
+    </div>
+    <div class="bisagra" aria-hidden="true"></div>
+    <div class="carcasa carcasa-inf">
+      <div class="marco pantalla-inf"><div class="lcd lcd-inf">
+        <div class="zona-teclado" id="zona-teclado">
+          <div class="columna-info">
+            <div class="pantalla-num tarjeta" id="pantalla-num"><span class="pista" id="pista-num">Resultado</span><span id="valor-num">_</span></div>
+            <div class="feedback info" id="feedback" aria-live="polite">&nbsp;</div>
+          </div>
+          <div class="teclado" id="teclado">
+            <button data-tecla="7">7</button><button data-tecla="8">8</button><button data-tecla="9">9</button>
+            <button data-tecla="4">4</button><button data-tecla="5">5</button><button data-tecla="6">6</button>
+            <button data-tecla="1">1</button><button data-tecla="2">2</button><button data-tecla="3">3</button>
+            <button data-tecla="borrar" class="t-borrar" aria-label="Borrar">⌫</button><button data-tecla="0">0</button><button data-tecla="ok" class="t-ok" aria-label="Confirmar">OK</button>
+          </div>
+        </div>
+        <div class="cuadricula" id="p-cuadricula"></div>
+      </div></div>
+      <div class="led" aria-hidden="true"></div>
     </div>
   </div>
 </section>
@@ -470,13 +562,13 @@ td.num{font-family:var(--f-num);font-weight:700}
 <!-- ================= RESULTADOS ================= -->
 <section id="pantalla-resultados" class="pantalla" aria-label="Resultados">
   <div class="resultados">
-    <div class="cab-resultados">
+    <div class="marco"><div class="lcd cab-resultados">
       <div class="prof tranquilo" id="profe-resultados" data-prof></div>
       <div>
         <h1 id="r-titulo">Fin de la sesión</h1>
         <p id="r-comentario">¡Bien hecho!</p>
       </div>
-    </div>
+    </div></div>
     <div class="cifras">
       <div class="cifra tarjeta"><small>Puntuación</small><b id="r-puntos">0</b><span id="r-record-etq"></span></div>
       <div class="cifra tarjeta"><small>Precisión</small><b id="r-precision">0%</b><span id="r-aciertos"></span></div>
@@ -1070,7 +1162,7 @@ td.num{font-family:var(--f-num);font-weight:700}
   function aplicarEstadoProfesor(est) {
     pintarProfesor($('#profe-juego'), est);
     document.body.classList.toggle('modo-demonio', est === 'demonio');
-    $('#relleno-tiempo').style.backgroundColor = est === 'demonio' ? '#ff4b3a' : '';
+    
   }
   /** Devuelve el estado nuevo; anima y suena si cambia. */
   function reaccionProfesor(acierto) {
@@ -1483,7 +1575,7 @@ td.num{font-family:var(--f-num);font-weight:700}
     $('#titulo-modo').textContent = NOMBRES[modo];
     $$('.vista').forEach(function (v) { v.classList.toggle('activa', v.id === 'vista-' + modo); });
     $('#zona-teclado').style.display = modo === 'posiciones' ? 'none' : '';
-    $('#zona-juego').style.gridTemplateColumns = modo === 'posiciones' ? (window.innerWidth > 1080 ? '240px minmax(0,1fr)' : '') : '';
+    $('#p-cuadricula').style.display = modo === 'posiciones' ? '' : 'none';
     estado.juego = modo === 'diabolico' ? crearDiabolico(estado.datos.nivelDiabolico)
                  : modo === 'posiciones' ? crearPosiciones() : crearDoble();
     mostrarPantalla('pantalla-juego');
@@ -1571,13 +1663,13 @@ td.num{font-family:var(--f-num);font-weight:700}
       const h = Math.max(2, altoZona * p.valor / tope);
       const x = mi + paso * i + (paso - ancho) / 2, y = ms + altoZona - h;
       const ultimo = i === puntos.length - 1;
-      s += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + ancho.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="4" fill="' + (ultimo ? '#e07a2e' : '#5b7fa6') + '"><title>' + p.dia + ': ' + p.valor + '</title></rect>';
+      s += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + ancho.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="4" fill="' + (ultimo ? '#f59a1b' : '#19a8e4') + '"><title>' + p.dia + ': ' + p.valor + '</title></rect>';
       s += '<text x="' + (x + ancho / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">' + p.valor + '</text>';
       const partes = p.dia.split('-');
       s += '<text x="' + (x + ancho / 2).toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" fill="currentColor" fill-opacity=".7">' + partes[2] + '/' + partes[1] + '</text>';
       linea += (i ? ' L' : 'M') + (x + ancho / 2).toFixed(1) + ' ' + y.toFixed(1);
     });
-    if (puntos.length > 1) s += '<path d="' + linea + '" fill="none" stroke="#e07a2e" stroke-width="2" stroke-dasharray="3 4"/>';
+    if (puntos.length > 1) s += '<path d="' + linea + '" fill="none" stroke="#f59a1b" stroke-width="2" stroke-dasharray="3 4"/>';
     s += '</svg>';
     cont.innerHTML = s;
   }
