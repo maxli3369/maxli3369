@@ -91,6 +91,12 @@ body.modo-demonio::after{
 .selector-nivel button b{display:block;font-family:var(--f-num);font-size:1.2rem}
 .selector-nivel button small{font-size:.7rem;color:var(--tinta-suave)}
 .selector-nivel button[aria-pressed="true"]{border-color:var(--acento);background:var(--acento-suave)}
+.operaciones-menu{display:flex;flex-direction:column;gap:6px}
+.etq-ops{font-size:.85rem;font-weight:700;color:var(--tinta-suave);text-transform:uppercase;letter-spacing:.05em}
+.selector-ops{display:flex;flex-wrap:wrap;gap:6px}
+.selector-ops button{border:2px solid var(--borde);background:var(--papel);border-radius:999px;padding:5px 12px;font-size:.92rem;font-weight:600;color:var(--tinta-tenue);text-decoration:line-through}
+.selector-ops button .sim{font-family:var(--f-num);font-weight:800}
+.selector-ops button[aria-pressed="true"]{border-color:var(--acento);background:var(--acento-suave);color:#7a3c0c;text-decoration:none}
 .pie-menu{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center}
 .pie-menu .nota{color:var(--tinta-tenue);font-size:.9rem;margin-left:auto}
 
@@ -135,6 +141,8 @@ body.modo-demonio::after{
 .operacion-actual{padding:22px 16px 16px;text-align:center;position:relative;overflow:hidden}
 .operacion-actual .etq{font-family:var(--f-mano);color:var(--tinta-suave);font-size:1.15rem}
 .operacion-actual .op{font-family:var(--f-num);font-weight:800;font-size:clamp(3.4rem,11vw,6.5rem);line-height:1.05;letter-spacing:.02em}
+.operacion-actual .op.larga{font-size:clamp(2rem,6.5vw,3.8rem);padding:.35em 0}
+.casilla-cola.larga b{font-size:1.05rem}
 .operacion-actual .op.entra{animation:entra .28s ease-out}
 @keyframes entra{from{transform:translateY(16px) scale(.92);opacity:0}to{transform:none;opacity:1}}
 .barra-op{height:10px;border-radius:6px;background:var(--borde);overflow:hidden;margin-top:10px}
@@ -356,6 +364,10 @@ td.num{font-family:var(--f-num);font-weight:700}
         <h2><span class="emoji">😈</span> Cálculo diabólico</h2>
         <p>Sale una operación cada pocos segundos. Nivel 1: respóndela <b>sin retraso</b>. Nivel 2: escribe la de <b>hace 1</b>. Nivel 3: la de <b>hace 2</b>… mientras memorizas la nueva.</p>
         <div class="selector-nivel" id="selector-nivel" role="group" aria-label="Nivel inicial"></div>
+        <div class="operaciones-menu">
+          <span class="etq-ops">Operaciones:</span>
+          <div class="selector-ops" id="selector-ops" role="group" aria-label="Tipos de operación"></div>
+        </div>
         <p class="record">Récord: <span data-record="diabolico">—</span></p>
         <button class="boton principal" data-empezar="diabolico">Empezar · 30 operaciones</button>
       </article>
@@ -556,19 +568,47 @@ td.num{font-family:var(--f-num);font-weight:700}
   const NIVEL_MAX = NIVELES.length;
   function configNivel(nivel) { return NIVELES[limitar(Math.round(nivel), 1, NIVEL_MAX) - 1]; }
 
-  /* ---------- generarOperacion: sumas, restas y multiplicaciones de una cifra ---------- */
-  function generarOperacion(rand, anterior) {
+  /* ---------- generarOperacion: tipos activables desde el menú ----------
+     Todas dan un número entero >= 0 de como mucho 2 cifras (teclado numérico). */
+  const TIPOS_OPERACION = ['suma', 'resta', 'mult', 'div', 'deriv'];
+  const NOMBRES_TIPO = { suma: 'Sumas', resta: 'Restas', mult: 'Multiplicaciones', div: 'Divisiones', deriv: 'Derivadas' };
+  const SIMBOLO_TIPO = { suma: '+', resta: '−', mult: '×', div: '÷', deriv: 'f′' };
+  const TIPOS_POR_DEFECTO = ['suma', 'resta', 'mult'];
+  function normalizarTipos(tipos) {
+    const t = Array.isArray(tipos) ? TIPOS_OPERACION.filter(function (x) { return tipos.indexOf(x) >= 0; }) : [];
+    return t.length ? t : TIPOS_POR_DEFECTO.slice();
+  }
+  function crearOperacionDeTipo(tipo, rand) {
+    let a, b, resultado;
+    if (tipo === 'suma') { a = entero(rand, 1, 9); b = entero(rand, 1, 9); resultado = a + b; }
+    else if (tipo === 'resta') { a = entero(rand, 2, 9); b = entero(rand, 1, a); resultado = a - b; } // nunca negativo
+    else if (tipo === 'mult') { a = entero(rand, 2, 9); b = entero(rand, 2, 9); resultado = a * b; }
+    else if (tipo === 'div') { b = entero(rand, 2, 9); resultado = entero(rand, 1, 9); a = b * resultado; } // división exacta
+    else {
+      // Derivada de un monomio (evaluada en un punto si hace falta): (c·xᵉ)′ en x = c·e·xᵉ⁻¹
+      const forma = entero(rand, 0, 3), sup = { 2: '²', 3: '³' };
+      let coef, exp, x = null, texto;
+      if (forma === 0) {
+        coef = entero(rand, 2, 9); exp = 1;
+        const c = entero(rand, 0, 9);
+        texto = '(' + coef + 'x' + (c ? ' + ' + c : '') + ')′';
+      } else {
+        if (forma === 1) { coef = 1; exp = 2; x = entero(rand, 1, 9); }
+        else if (forma === 2) { coef = entero(rand, 2, 4); exp = 2; x = entero(rand, 1, 5); }
+        else { coef = 1; exp = 3; x = entero(rand, 1, 4); }
+        texto = '(' + (coef > 1 ? coef : '') + 'x' + sup[exp] + ')′ en x=' + x;
+      }
+      return { tipo: 'deriv', coef: coef, exp: exp, x: x, simbolo: 'f′', texto: texto, resultado: coef * exp * Math.pow(x || 1, exp - 1) };
+    }
+    const simbolo = SIMBOLO_TIPO[tipo];
+    return { tipo: tipo, a: a, b: b, simbolo: simbolo, texto: a + ' ' + simbolo + ' ' + b, resultado: resultado };
+  }
+  function generarOperacion(rand, anterior, tipos) {
     rand = rand || Math.random;
+    const lista = normalizarTipos(tipos);
     let op;
     do {
-      const tipo = entero(rand, 0, 2);
-      let a, b, simbolo, resultado;
-      if (tipo === 0) { a = entero(rand, 1, 9); b = entero(rand, 1, 9); simbolo = '+'; resultado = a + b; }
-      else if (tipo === 1) {
-        a = entero(rand, 2, 9); b = entero(rand, 1, a); // resultado nunca negativo
-        simbolo = '−'; resultado = a - b;
-      } else { a = entero(rand, 2, 9); b = entero(rand, 2, 9); simbolo = '×'; resultado = a * b; }
-      op = { a: a, b: b, simbolo: simbolo, texto: a + ' ' + simbolo + ' ' + b, resultado: resultado };
+      op = crearOperacionDeTipo(lista[entero(rand, 0, lista.length - 1)], rand);
     } while (anterior && anterior.texto === op.texto);
     return op;
   }
@@ -770,11 +810,40 @@ td.num{font-family:var(--f-num);font-weight:700}
       for (let i = 0; i < 3000; i++) {
         const o = generarOperacion(rand, ant);
         const calc = o.simbolo === '+' ? o.a + o.b : o.simbolo === '−' ? o.a - o.b : o.a * o.b;
+        comprobar(TIPOS_POR_DEFECTO.indexOf(o.tipo) >= 0, 'por defecto: sumas, restas y multiplicaciones');
         comprobar(o.a >= 1 && o.a <= 9 && o.b >= 1 && o.b <= 9, 'operandos de una cifra');
         comprobar(o.resultado === calc && o.resultado >= 0, 'resultado correcto y no negativo');
         comprobar(!ant || ant.texto !== o.texto, 'no repite la operación anterior');
         ant = o;
       }
+      // Cada tipo por separado
+      TIPOS_OPERACION.forEach(function (tipo) {
+        let previa = null; const vistos = {};
+        for (let i = 0; i < 2000; i++) {
+          const o = generarOperacion(rand, previa, [tipo]);
+          vistos[o.texto] = true;
+          comprobar(o.tipo === tipo, tipo + ': solo sale el tipo activado');
+          comprobar(Number.isInteger(o.resultado) && o.resultado >= 0 && o.resultado <= 99, tipo + ': entero de 0 a 99');
+          if (tipo === 'suma') comprobar(o.resultado === o.a + o.b, 'suma correcta');
+          if (tipo === 'resta') comprobar(o.resultado === o.a - o.b, 'resta correcta');
+          if (tipo === 'mult') comprobar(o.resultado === o.a * o.b, 'multiplicación correcta');
+          if (tipo === 'div') comprobar(o.b >= 2 && o.b <= 9 && o.a === o.b * o.resultado && o.resultado <= 9, 'división exacta de una cifra');
+          if (tipo === 'deriv') comprobar(o.resultado === o.coef * o.exp * Math.pow(o.x || 1, o.exp - 1), 'derivada correcta');
+          previa = o;
+        }
+        comprobar(Object.keys(vistos).length > 8, tipo + ': hay variedad');
+      });
+      // Casos concretos de derivadas
+      [[3, 2, 2, 12], [1, 2, 7, 14], [1, 3, 4, 48], [5, 1, null, 5]].forEach(function (c) {
+        comprobar(c[0] * c[1] * Math.pow(c[2] || 1, c[1] - 1) === c[3], 'derivada de ejemplo ' + c.join(','));
+      });
+      // Mezcla: solo divisiones y derivadas
+      for (let i = 0; i < 500; i++) {
+        const t = generarOperacion(rand, null, ['div', 'deriv']).tipo;
+        comprobar(t === 'div' || t === 'deriv', 'mezcla div+deriv respeta la selección');
+      }
+      comprobar(normalizarTipos([]).join() === TIPOS_POR_DEFECTO.join(), 'lista vacía => tipos por defecto');
+      comprobar(normalizarTipos(['xx', 'div']).join() === 'div', 'ignora tipos desconocidos');
       for (let i = 0; i < 2000; i++) {
         const d = generarOperacionDoble(rand);
         comprobar(d.resultado >= 0, 'operación doble no negativa');
@@ -817,7 +886,8 @@ td.num{font-family:var(--f-num);font-weight:700}
 
   global.Nucleo = {
     NIVELES: NIVELES, NIVEL_MAX: NIVEL_MAX, configNivel: configNivel, limitar: limitar, entero: entero,
-    crearAleatorio: crearAleatorio, generarOperacion: generarOperacion, ColaOperaciones: ColaOperaciones,
+    crearAleatorio: crearAleatorio, generarOperacion: generarOperacion, TIPOS_OPERACION: TIPOS_OPERACION,
+    NOMBRES_TIPO: NOMBRES_TIPO, SIMBOLO_TIPO: SIMBOLO_TIPO, TIPOS_POR_DEFECTO: TIPOS_POR_DEFECTO, normalizarTipos: normalizarTipos, ColaOperaciones: ColaOperaciones,
     comprobarRespuesta: comprobarRespuesta, crearProfesor: crearProfesor, actualizarProfesor: actualizarProfesor,
     estadoProfesor: estadoProfesor, generarOperacionDoble: generarOperacionDoble, generarSecuencia: generarSecuencia,
     calcularEdadMental: calcularEdadMental, fechaLocal: fechaLocal, agruparPorDia: agruparPorDia,
@@ -942,7 +1012,7 @@ td.num{font-family:var(--f-num);font-weight:700}
 
   /* ---------------- Almacenamiento (localStorage con try/catch) ---------------- */
   const CLAVE = 'profeTuerca.v1';
-  function datosVacios() { return { sesiones: [], mejores: { diabolico: 0, posiciones: 0, doble: 0 }, nivelDiabolico: 1, sonido: true }; }
+  function datosVacios() { return { sesiones: [], mejores: { diabolico: 0, posiciones: 0, doble: 0 }, nivelDiabolico: 1, sonido: true, operaciones: N.TIPOS_POR_DEFECTO.slice() }; }
   function cargarDatos() {
     try {
       const t = localStorage.getItem(CLAVE);
@@ -952,7 +1022,8 @@ td.num{font-family:var(--f-num);font-weight:700}
         sesiones: Array.isArray(d.sesiones) ? d.sesiones : [],
         mejores: Object.assign(v.mejores, d.mejores || {}),
         nivelDiabolico: N.configNivel(d.nivelDiabolico || 1).nivel,
-        sonido: d.sonido !== false
+        sonido: d.sonido !== false,
+        operaciones: N.normalizarTipos(d.operaciones)
       };
     } catch (e) { return datosVacios(); }
   }
@@ -1107,7 +1178,7 @@ td.num{font-family:var(--f-num);font-weight:700}
         if (this.respondidas >= SESION_OPERACIONES || this.transcurrido >= SESION_SEGUNDOS) { terminarSesion(); return; }
         const cfg = N.configNivel(this.nivel);
         this.n = cfg.n; this.duracion = cfg.segundos; this.restante = cfg.segundos;
-        const op = N.generarOperacion(Math.random, this.cola.actual());
+        const op = N.generarOperacion(Math.random, this.cola.actual(), estado.datos.operaciones);
         this.cola.agregar(op);
         this.objetivo = this.cola.indiceObjetivo(this.n);
         estado.entrada = ''; pintarEntrada();
@@ -1119,13 +1190,14 @@ td.num{font-family:var(--f-num);font-weight:700}
         $('#d-nivel').textContent = this.nivel; $('#d-n').textContent = this.n; $('#d-seg').textContent = String(cfg.segundos).replace('.', ',');
         const opEl = $('#d-op');
         opEl.textContent = this.cola.actual().texto;
+        opEl.classList.toggle('larga', this.cola.actual().texto.length > 8);
         reiniciarAnimacion(opEl, 'entra');
         // Cola visual: N casillas tapadas + la actual
         const k = this.cola.ops.length - 1, cont = $('#d-cola');
         let html = '';
         for (let i = Math.max(0, k - this.n); i <= k; i++) {
           const atras = k - i;
-          if (i === k) html += '<div class="casilla-cola actual' + (i === this.objetivo ? ' objetivo' : '') + '"><small>' + (i === this.objetivo ? '¡responde esta!' : 'ahora') + '</small><b>' + this.cola.ops[i].texto + '</b></div>';
+          if (i === k) html += '<div class="casilla-cola actual' + (i === this.objetivo ? ' objetivo' : '') + (this.cola.ops[i].texto.length > 8 ? ' larga' : '') + '"><small>' + (i === this.objetivo ? '¡responde esta!' : 'ahora') + '</small><b>' + this.cola.ops[i].texto + '</b></div>';
           else {
             const esObj = i === this.objetivo;
             html += '<div class="casilla-cola' + (esObj ? ' objetivo' : '') + '"><small>' + (esObj ? '¡responde esta!' : 'hace ' + atras) + '</small><b>?</b></div>';
@@ -1544,11 +1616,24 @@ td.num{font-family:var(--f-num);font-weight:700}
         '<b>' + c.nivel + '</b><small>N=' + c.n + ' · ' + String(c.segundos).replace('.', ',') + 's</small></button>';
     });
     sel.innerHTML = html;
+    $('#selector-ops').innerHTML = N.TIPOS_OPERACION.map(function (t) {
+      const on = estado.datos.operaciones.indexOf(t) >= 0;
+      return '<button data-tipo="' + t + '" aria-pressed="' + on + '"><span class="sim">' + N.SIMBOLO_TIPO[t] + '</span> ' + N.NOMBRES_TIPO[t] + '</button>';
+    }).join('');
     $$('[data-record]').forEach(function (el) { const v = estado.datos.mejores[el.dataset.record]; el.textContent = v ? v + ' pts' : '—'; });
     const b = $('#btn-sonido');
     b.textContent = estado.datos.sonido ? '🔊 Sonido: sí' : '🔇 Sonido: no';
     b.setAttribute('aria-pressed', String(estado.datos.sonido));
   }
+  $('#selector-ops').addEventListener('click', function (e) {
+    const b = e.target.closest('button[data-tipo]'); if (!b) return;
+    const tipo = b.dataset.tipo, act = estado.datos.operaciones.slice(), i = act.indexOf(tipo);
+    if (i >= 0) {
+      if (act.length === 1) { aviso('Deja al menos un tipo de operación activo'); reiniciarAnimacion(b, 'temblor-suave'); return; }
+      act.splice(i, 1);
+    } else act.push(tipo);
+    estado.datos.operaciones = N.normalizarTipos(act); guardarDatos(); pintarMenu();
+  });
   $('#selector-nivel').addEventListener('click', function (e) {
     const b = e.target.closest('button[data-nivel]'); if (!b) return;
     estado.datos.nivelDiabolico = parseInt(b.dataset.nivel, 10); guardarDatos(); pintarMenu();
