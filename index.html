@@ -354,7 +354,7 @@ td.num{font-family:var(--f-num);font-weight:700}
     <div class="modos">
       <article class="tarjeta modo destacado">
         <h2><span class="emoji">😈</span> Cálculo diabólico</h2>
-        <p>Sale una operación cada pocos segundos. <b>No respondas la actual</b>: escribe el resultado de la de hace <b>N</b> operaciones mientras memorizas la nueva.</p>
+        <p>Sale una operación cada pocos segundos. Nivel 1: respóndela <b>sin retraso</b>. Nivel 2: escribe la de <b>hace 1</b>. Nivel 3: la de <b>hace 2</b>… mientras memorizas la nueva.</p>
         <div class="selector-nivel" id="selector-nivel" role="group" aria-label="Nivel inicial"></div>
         <p class="record">Récord: <span data-record="diabolico">—</span></p>
         <button class="boton principal" data-empezar="diabolico">Empezar · 30 operaciones</button>
@@ -410,7 +410,7 @@ td.num{font-family:var(--f-num);font-weight:700}
           <span class="chip"><span id="d-seg">6</span> s / operación</span>
         </div>
         <div class="tarjeta operacion-actual">
-          <div class="etq">Memoriza esta:</div>
+          <div class="etq" id="d-etq">Memoriza esta:</div>
           <div class="op" id="d-op">3 + 4</div>
           <div class="barra-op"><div id="d-barra-op"></div></div>
         </div>
@@ -546,9 +546,9 @@ td.num{font-family:var(--f-num);font-weight:700}
 
   /* ---------- niveles: N (retraso) y segundos por operación ---------- */
   const NIVELES = [
-    { nivel: 1, n: 1, segundos: 6.0 },
-    { nivel: 2, n: 1, segundos: 5.0 },
-    { nivel: 3, n: 2, segundos: 4.5 },
+    { nivel: 1, n: 0, segundos: 6.0 },  // sin retraso: responde la operación actual
+    { nivel: 2, n: 1, segundos: 5.0 },  // retraso 1
+    { nivel: 3, n: 2, segundos: 4.5 },  // retraso 2
     { nivel: 4, n: 2, segundos: 3.5 },
     { nivel: 5, n: 3, segundos: 3.0 },
     { nivel: 6, n: 3, segundos: 2.0 }
@@ -669,7 +669,7 @@ td.num{font-family:var(--f-num);font-weight:700}
     const op = function (r) { return { texto: 'op' + r, resultado: r }; };
 
     // 1) Retraso fijo N = 1, 2, 3: el objetivo es siempre la de hace N.
-    [1, 2, 3].forEach(function (n) {
+    [0, 1, 2, 3].forEach(function (n) {
       const cola = new ColaOperaciones();
       for (let k = 0; k < 12; k++) {
         cola.agregar(op(100 + k));
@@ -723,6 +723,23 @@ td.num{font-family:var(--f-num);font-weight:700}
       comprobar(comprobarRespuesta(cola, 2, '6').correcta, 'bajada 3->2: correcta');
     })();
 
+    // 3b) Nivel sin retraso y paso 0 -> 1 -> 2.
+    (function () {
+      const cola = new ColaOperaciones();
+      cola.agregar(op(10));
+      comprobar(cola.indiceObjetivo(0) === 0, 'N=0: se responde la actual');
+      comprobar(comprobarRespuesta(cola, 0, '10').correcta, 'N=0: correcta');
+      cola.agregar(op(11)); comprobarRespuesta(cola, 0, '11');
+      cola.agregar(op(12));
+      comprobar(cola.indiceObjetivo(1) === -1, 'cambio 0->1: op2 solo memorizar (op1 ya respondida)');
+      cola.agregar(op(13));
+      comprobar(cola.indiceObjetivo(1) === 2 && comprobarRespuesta(cola, 1, '12').correcta, 'cambio 0->1: op3 responde op2');
+      cola.agregar(op(14));
+      comprobar(cola.indiceObjetivo(2) === -1, 'cambio 1->2: op4 solo memorizar');
+      cola.agregar(op(15));
+      comprobar(cola.indiceObjetivo(2) === 3 && comprobarRespuesta(cola, 2, '13').correcta, 'cambio 1->2: op5 responde op3');
+    })();
+
     // 4) Simulación aleatoria larga contra un "oráculo" independiente.
     (function () {
       const rand = crearAleatorio(12345);
@@ -730,7 +747,7 @@ td.num{font-family:var(--f-num);font-weight:700}
       const vistos = []; // resultados en el orden mostrado
       let n = 1, respondidas = 0, anterior = null;
       for (let paso = 0; paso < 600; paso++) {
-        if (paso % 37 === 0) n = entero(rand, 1, 3);
+        if (paso % 37 === 0) n = entero(rand, 0, 3);
         anterior = generarOperacion(rand, anterior);
         cola.agregar(anterior); vistos.push(anterior.resultado);
         const i = cola.indiceObjetivo(n);
@@ -783,8 +800,9 @@ td.num{font-family:var(--f-num);font-weight:700}
     })();
 
     // 7) Niveles, edad mental y agrupación por día.
-    comprobar(configNivel(1).n === 1 && configNivel(1).segundos === 6, 'nivel 1: N=1, 6 s');
-    comprobar(configNivel(3).n === 2, 'nivel 3: N=2');
+    comprobar(configNivel(1).n === 0 && configNivel(1).segundos === 6, 'nivel 1: sin retraso, 6 s');
+    comprobar(configNivel(2).n === 1, 'nivel 2: retraso 1');
+    comprobar(configNivel(3).n === 2, 'nivel 3: retraso 2');
     comprobar(configNivel(6).n === 3 && configNivel(6).segundos === 2, 'nivel 6: N=3, 2 s');
     comprobar(configNivel(99).nivel === 6 && configNivel(-1).nivel === 1, 'niveles limitados');
     comprobar(calcularEdadMental(1, 1, 1) === 18 && calcularEdadMental(0, 0, 0) === 78, 'edad mental en rango');
@@ -951,6 +969,7 @@ td.num{font-family:var(--f-num);font-weight:700}
 
   /* ---------------- Utilidades de UI ---------------- */
   function mostrarPantalla(id) {
+    if (id !== 'pantalla-juego') $('#aviso').classList.remove('visible');
     $$('.pantalla').forEach(function (p) { p.classList.toggle('activa', p.id === id); });
     window.scrollTo(0, 0);
   }
@@ -1079,7 +1098,8 @@ td.num{font-family:var(--f-num);font-weight:700}
         estado.maxDigitos = 2;
         $('#m-prog-etq').textContent = 'Op.';
         $('#etq-tiempo-izq').textContent = 'Sesión: 5 min o 30 operaciones';
-        decir('Memoriza la primera. Responderás la de hace ' + N.configNivel(this.nivel).n + '.');
+        const n0 = N.configNivel(this.nivel).n;
+        decir(n0 === 0 ? 'Calentamos: resuelve cada operación según aparece.' : 'Memoriza la primera. Responderás la de hace ' + n0 + '.');
         this.mostrarSiguiente();
       },
       aceptaNumeros: function () { return this.objetivo >= 0; },
@@ -1105,14 +1125,18 @@ td.num{font-family:var(--f-num);font-weight:700}
         let html = '';
         for (let i = Math.max(0, k - this.n); i <= k; i++) {
           const atras = k - i;
-          if (i === k) html += '<div class="casilla-cola actual"><small>ahora</small><b>' + this.cola.ops[i].texto + '</b></div>';
+          if (i === k) html += '<div class="casilla-cola actual' + (i === this.objetivo ? ' objetivo' : '') + '"><small>' + (i === this.objetivo ? '¡responde esta!' : 'ahora') + '</small><b>' + this.cola.ops[i].texto + '</b></div>';
           else {
             const esObj = i === this.objetivo;
             html += '<div class="casilla-cola' + (esObj ? ' objetivo' : '') + '"><small>' + (esObj ? '¡responde esta!' : 'hace ' + atras) + '</small><b>?</b></div>';
           }
         }
         cont.innerHTML = html;
-        if (this.objetivo >= 0) {
+        $('#d-etq').textContent = this.n === 0 ? 'Resuelve esta:' : 'Memoriza esta:';
+        if (this.objetivo >= 0 && this.n === 0) {
+          $('#d-instruccion').innerHTML = 'Escribe el resultado de <b>esta operación</b> y pulsa OK.';
+          pista('Resultado');
+        } else if (this.objetivo >= 0) {
           $('#d-instruccion').innerHTML = 'Escribe el resultado de la operación de <b>hace ' + this.n + '</b> y pulsa OK.';
           pista('Resultado de hace ' + this.n);
         } else {
@@ -1160,7 +1184,7 @@ td.num{font-family:var(--f-num);font-weight:700}
           this.nivel++; this.nivelMax = Math.max(this.nivelMax, this.nivel);
           const cfg = N.configNivel(this.nivel);
           Sonido.nivel();
-          aviso('¡Nivel ' + this.nivel + '! ' + (cfg.n > nAntes ? 'Ahora responde la de hace ' + cfg.n : cfg.segundos + ' s por operación'));
+          aviso('¡Nivel ' + this.nivel + '! ' + (cfg.n > nAntes ? 'Ahora responde la de hace ' + cfg.n + (nAntes === 0 ? ' (retraso 1)' : '') : cfg.segundos + ' s por operación'));
         } else if (reac.ahora === 'demonio' && reac.antes !== 'demonio' && this.nivel > 1) {
           this.nivel--; aviso('El demonio te baja al nivel ' + this.nivel);
         }
@@ -1516,7 +1540,7 @@ td.num{font-family:var(--f-num);font-weight:700}
   function pintarMenu() {
     const sel = $('#selector-nivel'); let html = '';
     N.NIVELES.forEach(function (c) {
-      html += '<button data-nivel="' + c.nivel + '" aria-pressed="' + (c.nivel === estado.datos.nivelDiabolico) + '" aria-label="Nivel ' + c.nivel + ', N ' + c.n + ', ' + c.segundos + ' segundos">' +
+      html += '<button data-nivel="' + c.nivel + '" aria-pressed="' + (c.nivel === estado.datos.nivelDiabolico) + '" aria-label="Nivel ' + c.nivel + ', ' + (c.n === 0 ? 'sin retraso' : 'retraso ' + c.n) + ', ' + c.segundos + ' segundos">' +
         '<b>' + c.nivel + '</b><small>N=' + c.n + ' · ' + String(c.segundos).replace('.', ',') + 's</small></button>';
     });
     sel.innerHTML = html;
