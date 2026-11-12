@@ -662,9 +662,9 @@ td.num{font-weight:800}
 
   /* ---------- generarOperacion: tipos activables desde el menú ----------
      Todas dan un número entero >= 0 de como mucho 2 cifras (teclado numérico). */
-  const TIPOS_OPERACION = ['suma', 'resta', 'mult', 'div', 'deriv'];
-  const NOMBRES_TIPO = { suma: 'Sumas', resta: 'Restas', mult: 'Multiplicaciones', div: 'Divisiones', deriv: 'Derivadas' };
-  const SIMBOLO_TIPO = { suma: '+', resta: '−', mult: '×', div: '÷', deriv: 'f′' };
+  const TIPOS_OPERACION = ['suma', 'resta', 'mult', 'div', 'deriv', 'integ'];
+  const NOMBRES_TIPO = { suma: 'Sumas', resta: 'Restas', mult: 'Multiplicaciones', div: 'Divisiones', deriv: 'Derivadas', integ: 'Integrales' };
+  const SIMBOLO_TIPO = { suma: '+', resta: '−', mult: '×', div: '÷', deriv: 'f′', integ: '∫' };
   const TIPOS_POR_DEFECTO = ['suma', 'resta', 'mult'];
   function normalizarTipos(tipos) {
     const t = Array.isArray(tipos) ? TIPOS_OPERACION.filter(function (x) { return tipos.indexOf(x) >= 0; }) : [];
@@ -676,6 +676,21 @@ td.num{font-weight:800}
     else if (tipo === 'resta') { a = entero(rand, 2, 9); b = entero(rand, 1, a); resultado = a - b; } // nunca negativo
     else if (tipo === 'mult') { a = entero(rand, 2, 9); b = entero(rand, 2, 9); resultado = a * b; }
     else if (tipo === 'div') { b = entero(rand, 2, 9); resultado = entero(rand, 1, 9); a = b * resultado; } // división exacta
+    else if (tipo === 'integ') {
+      // Integral definida de un monomio con resultado entero: ∫ₐᵇ c·xᵉ dx = c·(bᵉ⁺¹ − aᵉ⁺¹)/(e+1)
+      const SUB = '₀₁₂₃₄₅₆₇₈₉', SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+      const forma = entero(rand, 0, 4);
+      let coef, exp, desde = 0, hasta;
+      if (forma === 0) { coef = entero(rand, 2, 9); exp = 0; hasta = entero(rand, 1, 9); }          // ∫₀ᵇ c dx = c·b
+      else if (forma === 1) { coef = 2; exp = 1; hasta = entero(rand, 1, 9); desde = entero(rand, 0, hasta - 1); } // b² − a²
+      else if (forma === 2) { coef = 1; exp = 1; hasta = 2 * entero(rand, 1, 4); }                     // b²/2 con b par
+      else if (forma === 3) { coef = 3; exp = 2; hasta = entero(rand, 1, 4); }                         // b³
+      else { coef = 4; exp = 3; hasta = entero(rand, 1, 3); }                                          // b⁴
+      const termino = exp === 0 ? String(coef) : (coef > 1 ? coef : '') + 'x' + (exp > 1 ? SUP[exp] : '');
+      const texto = '∫' + SUB[desde] + SUP[hasta] + ' ' + termino + ' dx';
+      const r = coef * (Math.pow(hasta, exp + 1) - Math.pow(desde, exp + 1)) / (exp + 1);
+      return { tipo: 'integ', coef: coef, exp: exp, desde: desde, hasta: hasta, simbolo: '∫', texto: texto, resultado: r };
+    }
     else {
       // Derivada de un monomio (evaluada en un punto si hace falta): (c·xᵉ)′ en x = c·e·xᵉ⁻¹
       const forma = entero(rand, 0, 3), sup = { 2: '²', 3: '³' };
@@ -921,11 +936,25 @@ td.num{font-weight:800}
           if (tipo === 'mult') comprobar(o.resultado === o.a * o.b, 'multiplicación correcta');
           if (tipo === 'div') comprobar(o.b >= 2 && o.b <= 9 && o.a === o.b * o.resultado && o.resultado <= 9, 'división exacta de una cifra');
           if (tipo === 'deriv') comprobar(o.resultado === o.coef * o.exp * Math.pow(o.x || 1, o.exp - 1), 'derivada correcta');
+          if (tipo === 'integ') {
+            // Comprobación numérica independiente (regla del trapecio muy fina)
+            let area = 0; const pasos = 2000, h = (o.hasta - o.desde) / pasos;
+            for (let j = 0; j < pasos; j++) {
+              const x0 = o.desde + j * h, x1 = x0 + h;
+              area += (o.coef * Math.pow(x0, o.exp) + o.coef * Math.pow(x1, o.exp)) / 2 * h;
+            }
+            comprobar(Math.abs(area - o.resultado) < 0.01, 'integral correcta (numérica): ' + o.texto);
+            comprobar(o.desde < o.hasta && o.hasta <= 9, 'límites de integración de una cifra');
+          }
           previa = o;
         }
         comprobar(Object.keys(vistos).length > 8, tipo + ': hay variedad');
       });
       // Casos concretos de derivadas
+      // Casos concretos de integrales (∫ de a a b de c·xᵉ)
+      [[2, 1, 0, 3, 9], [2, 1, 2, 5, 21], [1, 1, 0, 6, 18], [3, 2, 0, 4, 64], [4, 3, 0, 3, 81], [7, 0, 0, 5, 35]].forEach(function (c) {
+        comprobar(c[0] * (Math.pow(c[3], c[1] + 1) - Math.pow(c[2], c[1] + 1)) / (c[1] + 1) === c[4], 'integral de ejemplo ' + c.join(','));
+      });
       [[3, 2, 2, 12], [1, 2, 7, 14], [1, 3, 4, 48], [5, 1, null, 5]].forEach(function (c) {
         comprobar(c[0] * c[1] * Math.pow(c[2] || 1, c[1] - 1) === c[3], 'derivada de ejemplo ' + c.join(','));
       });
